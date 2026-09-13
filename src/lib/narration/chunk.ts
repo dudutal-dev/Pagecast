@@ -11,6 +11,10 @@ export interface Chunk {
  * Splits text into TTS requests of at most `maxChars`, preferring paragraph
  * boundaries, then sentence boundaries. Never splits inside a sentence unless a
  * single sentence exceeds the limit (then it is hard-split on whitespace).
+ *
+ * Chunks are balanced: a 4,500-char script becomes two ~2,250-char requests,
+ * not a 4,000-char one plus a 500-char tail. Short tail requests gave the
+ * expressive model too little run-up and produced garbled audio.
  */
 export function chunkText(text: string, maxChars = MAX_CHUNK_CHARS): Chunk[] {
   const paragraphs = text
@@ -18,6 +22,11 @@ export function chunkText(text: string, maxChars = MAX_CHUNK_CHARS): Chunk[] {
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);
+
+  const total = paragraphs.reduce((a, p) => a + p.length + 2, 0);
+  const parts = Math.max(1, Math.ceil(total / maxChars));
+  // Soft target per chunk; the hard limit stays maxChars.
+  const target = Math.min(maxChars, Math.ceil(total / parts) + 200);
 
   const chunks: string[] = [];
   let cur = "";
@@ -27,7 +36,7 @@ export function chunkText(text: string, maxChars = MAX_CHUNK_CHARS): Chunk[] {
   };
   const append = (piece: string) => {
     if (!cur) cur = piece;
-    else if (cur.length + 2 + piece.length <= maxChars) cur = `${cur}\n\n${piece}`;
+    else if (cur.length + 2 + piece.length <= target) cur = `${cur}\n\n${piece}`;
     else {
       flush();
       cur = piece;

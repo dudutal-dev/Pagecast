@@ -10,7 +10,7 @@ import { attachAudio, getAudioAsset } from "@/server/services/audio";
 import { getSettings } from "@/server/services/settings";
 import { logger } from "@/server/logger";
 import { scriptHash } from "./hash";
-import { chunkText, type Chunk } from "@/lib/narration/chunk";
+import { chunkText } from "@/lib/narration/chunk";
 import { preprocessForTts } from "@/lib/narration/preprocess";
 import { buildSentenceAlignment } from "@/lib/narration/alignment";
 import { countWords } from "@/lib/narration/sentences";
@@ -173,8 +173,6 @@ export async function produceNarration(
         model: settings.voiceModel,
         settings: settings.voiceSettings,
         withTimestamps: true,
-        previousText: neighbour(chunks, chunk.index - 1),
-        nextText: neighbour(chunks, chunk.index + 1),
       });
       modelUsed = res.model;
       const partPath = path.join(
@@ -270,11 +268,4 @@ export async function produceNarration(
   } finally {
     await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => undefined);
   }
-}
-
-function neighbour(chunks: Chunk[], i: number): string | undefined {
-  const c = chunks[i];
-  if (!c) return undefined;
-  // ElevenLabs uses previous/next text for prosody continuity; a few hundred chars suffice.
-  return i < 0 ? undefined : c.text.slice(i > 0 ? -600 : 0, i > 0 ? undefined : 600);
 }

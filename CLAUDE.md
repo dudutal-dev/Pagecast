@@ -45,11 +45,21 @@ Next.js 15 App Router + TypeScript strict + Tailwind CSS 4. SQLite via `better-s
 
 ## Content model (decided 2026-09-13)
 
-The owner wants no API dependency inside the running app. Episodes are **authored** as
-`content/episodes/<slug>.json` (summary, script and a pre-written `performedScript` written by
-Claude in the coding session with the book-message-expert skill), then `npm run ingest --produce`
-narrates them once with the owner's ElevenLabs key. The app is the library and player; the in-app
-narration and AI-generation routes remain available but are optional.
+The owner wants no API dependency inside the running app, and the app itself in the form of the
+owner's Elixir cocktail atlas: a static PWA. So the repo has two halves:
+
+- **`site/` is the product**: HTML + CSS + JS modules, no build step, hash router, service worker,
+  localStorage state. Deployed to GitHub Pages by `.github/workflows/pages.yml` on every push that
+  touches `site/`. Everything it needs is inside it: `data/episodes.json`, `audio/*.mp3`,
+  `assets/illustrations/*.jpg`. Never add network calls there.
+- **The Next.js app + SQLite is the studio**: authoring (`content/episodes/<slug>.json`, written by
+  Claude with the book-message-expert skill), narration (`npm run ingest -- --produce`, ElevenLabs
+  eleven_v3, voice Jessica `cgSgspJ2msm6clMCkdW9`), illustrations (`npm run illustrations`,
+  ElevenLabs Image API, engraving-on-black style prompt in `scripts/illustrations.ts`), and
+  `npm run export-site` which packs everything into `site/`.
+
+Adding a book = new JSON in `content/episodes/`, then ingest --produce, illustrations, export-site,
+commit, push.
 
 ## Architecture
 

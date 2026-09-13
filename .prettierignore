@@ -10,3 +10,6 @@ package-lock.json
 .claude/skills
 pagecast-claude-code-prompt.md
 public/sw.js
+site/data
+site/audio
+site/assets

@@ -180,6 +180,12 @@ async function mapError(res: Response): Promise<AppError> {
     /* non-JSON body */
   }
   const lower = `${status} ${detail}`.toLowerCase();
+  // ElevenLabs answers 401 for an exhausted quota as well; check the reason first.
+  if (lower.includes("quota") || res.status === 402) {
+    return new AppError("QUOTA_EXCEEDED", "נגמרה מכסת התווים בחשבון ElevenLabs", {
+      hint: detail || "בדוק את המכסה בחשבון, הפעל חריגה בתשלום, או חכה לחידוש החודשי",
+    });
+  }
   if (res.status === 401) {
     return new AppError("INVALID_API_KEY", "מפתח ElevenLabs לא תקין", {
       hint: "בדוק את ELEVENLABS_API_KEY ב-.env.local",

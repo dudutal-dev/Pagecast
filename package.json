@@ -26,7 +26,9 @@
     "prepare": "husky",
     "ingest": "tsx scripts/ingest.ts",
     "voices": "tsx scripts/voices.ts",
-    "set-voice": "tsx scripts/set-voice.ts"
+    "set-voice": "tsx scripts/set-voice.ts",
+    "illustrations": "tsx scripts/illustrations.ts",
+    "export-site": "tsx scripts/export-site.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
@@ -57,6 +59,7 @@
     "lint-staged": "^16.1.0",
     "prettier": "^3.6.0",
     "prettier-plugin-tailwindcss": "^0.6.14",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsx": "^4.20.0",
     "typescript": "^5",

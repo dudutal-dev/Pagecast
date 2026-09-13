@@ -34,6 +34,7 @@ const eslintConfig = [
       "test-results/**",
       "next-env.d.ts",
       "public/sw.js",
+      "site/**",
     ],
   },
 ];

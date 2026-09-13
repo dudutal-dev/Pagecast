@@ -43,27 +43,39 @@ export async function concatMp3(parts: string[], outPath: string): Promise<void>
     await fs.copyFile(parts[0]!, outPath);
     return;
   }
-  const listPath = `${outPath}.list.txt`;
+  // The concat demuxer misreads Windows drive letters ("C:/…") as a protocol, so the
+  // list uses file names relative to the parts' directory and ffmpeg runs from there.
+  const dir = path.dirname(parts[0]!);
+  const listPath = path.join(dir, `${path.basename(outPath)}.list.txt`);
   const list = parts
-    .map((p) => `file '${p.replace(/\\/g, "/").replace(/'/g, "'\\''")}'`)
+    .map((p) => `file '${path.basename(p).replace(/'/g, "'\\''")}'`)
     .join("\n");
   await fs.writeFile(listPath, list, "utf8");
   try {
-    await exec(process.env.FFMPEG_PATH ?? "ffmpeg", [
-      "-y",
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-f",
-      "concat",
-      "-safe",
-      "0",
-      "-i",
-      listPath,
-      "-c",
-      "copy",
-      outPath,
-    ]);
+    await exec(
+      process.env.FFMPEG_PATH ?? "ffmpeg",
+      [
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        path.basename(listPath),
+        "-c",
+        "copy",
+        outPath,
+      ],
+      { cwd: dir },
+    );
+  } catch (e) {
+    const err = e as Error & { stderr?: string };
+    throw new Error(
+      `ffmpeg concat failed: ${(err.stderr ?? err.message).trim().slice(0, 400)}`,
+    );
   } finally {
     await fs.rm(listPath, { force: true });
   }

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="he" dir="rtl" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f0e0c" />
+    <meta
+      name="description"
+      content="פייג'קאסט · Pagecast — פודקאסט הספרים: תקציר עם מסר לכל ספר, בקריינות עברית, עם איורים מקוריים. עובד אופליין, מתקין למסך הבית."
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="פייג'קאסט" />
+    <title>פייג'קאסט · PAGECAST — פודקאסט הספרים</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icons/icon-64.png" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-180.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Heebo:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">דלג לתוכן</a>
+
+    <header class="topbar" id="topbar">
+      <a class="brand" href="#/" aria-label="שער">
+        <img
+          class="brand-mark"
+          src="assets/icons/icon-64.png"
+          alt=""
+          aria-hidden="true"
+        />
+        <span class="brand-text"
+          ><span class="brand-he">פייג'קאסט</span
+          ><span class="brand-en">Pagecast · Books, Narrated</span></span
+        >
+      </a>
+      <nav class="topnav" aria-label="ניווט ראשי">
+        <a href="#/" data-route="home">שער</a>
+        <a href="#/library" data-route="library">הספרייה</a>
+        <a href="#/paths" data-route="paths">מסלולים</a>
+        <a href="#/favorites" data-route="favorites">מועדפים</a>
+        <a href="#/about" data-route="about">אודות</a>
+      </nav>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="btn-search" aria-label="חיפוש" title="חיפוש">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-4-4" />
+          </svg>
+        </button>
+        <a class="icon-btn" href="#/settings" aria-label="הגדרות" title="הגדרות">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+            />
+          </svg>
+        </a>
+        <button
+          class="icon-btn"
+          id="btn-theme"
+          aria-label="החלף מצב תצוגה"
+          title="כהה / בהיר"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="search-layer" id="search-layer" hidden>
+      <div class="search-panel" role="dialog" aria-label="חיפוש ספרים">
+        <div class="search-row">
+          <input
+            id="search-input"
+            type="search"
+            placeholder="חפש ספר, מחבר או מסר… (עברית או English)"
+            autocomplete="off"
+            aria-label="חיפוש"
+          />
+          <button class="icon-btn" id="search-close" aria-label="סגור">✕</button>
+        </div>
+        <div id="search-results" class="search-results" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <main id="main" class="page" tabindex="-1"></main>
+
+    <div id="player" class="player" hidden aria-label="נגן" role="region"></div>
+
+    <nav class="bottomnav" aria-label="ניווט תחתון">
+      <a href="#/" data-route="home"
+        ><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z" /></svg
+        ><span>שער</span></a
+      >
+      <a href="#/library" data-route="library"
+        ><svg viewBox="0 0 24 24"><path d="M4 4h7v16H4zM13 4h7v16h-7z" /></svg
+        ><span>ספרייה</span></a
+      >
+      <button id="bn-search" aria-label="חיפוש">
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-4-4" /></svg
+        ><span>חיפוש</span>
+      </button>
+      <a href="#/paths" data-route="paths"
+        ><svg viewBox="0 0 24 24">
+          <path d="M4 6h10M4 12h16M4 18h12" />
+          <circle cx="19" cy="6" r="2" /></svg
+        ><span>מסלולים</span></a
+      >
+      <a href="#/favorites" data-route="favorites"
+        ><svg viewBox="0 0 24 24">
+          <path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z" /></svg
+        ><span>מועדפים</span></a
+      >
+    </nav>
+
+    <footer class="colophon">
+      <p>
+        פייג'קאסט · PAGECAST — פודקאסט הספרים · התקצירים במילים שלנו, הקריינות והאיורים
+        הופקו במיוחד עבור הספרייה ·
+        <a href="#/about" style="color: var(--gold)">אודות</a> · © דודו טל
+      </p>
+    </footer>
+
+    <audio id="audio" preload="metadata" hidden></audio>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
