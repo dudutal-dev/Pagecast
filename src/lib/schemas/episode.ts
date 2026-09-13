@@ -39,6 +39,14 @@ const coreShape = {
 
 export const episodeInputSchema = z.object({
   ...coreShape,
+  /** Optional stable key (a-z, 0-9, dashes) for authored content; ingest upserts by it. */
+  slug: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug: אותיות לטיניות קטנות, ספרות ומקפים בלבד")
+    .optional(),
+  /** Optional pre-written performed script (for the ear, with v3 tags where wanted). */
+  performedScript: optionalText,
   titleEn: optionalText,
   authorEn: optionalText,
   year: z.coerce.number().int().min(-3000).max(2100).optional().catch(undefined),
@@ -52,8 +60,9 @@ export const episodeInputSchema = z.object({
 export type EpisodeInput = z.infer<typeof episodeInputSchema>;
 
 /** Full persisted episode as returned by the API. */
-export const episodeSchema = episodeInputSchema.extend({
+export const episodeSchema = episodeInputSchema.omit({ performedScript: true }).extend({
   id: z.string(),
+  slug: z.string().nullable(),
   cardSvg: z.string(),
   performedScript: z.string().nullable(),
   status: z.enum(EPISODE_STATUSES),

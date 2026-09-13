@@ -37,6 +37,7 @@ function toEpisode(row: EpisodeRow): Episode {
   return {
     id: row.id,
     title: row.title,
+    slug: row.slug ?? null,
     titleEn: row.titleEn ?? undefined,
     author: row.author,
     authorEn: row.authorEn ?? undefined,
@@ -185,7 +186,8 @@ export function createEpisode(input: EpisodeInput): Result<Episode> {
       message: input.message,
       summaryMd: input.summaryMd,
       script: input.script,
-      performedScript: null,
+      performedScript: input.performedScript ?? null,
+      slug: input.slug ?? null,
       takeaways: input.takeaways,
       takeawaysDone: input.takeaways.map(() => false),
       caveat: input.caveat,
@@ -301,6 +303,44 @@ export function markStatus(id: string, status: EpisodeStatus): Result<Episode> {
   }
   const row = db.select().from(episodes).where(eq(episodes.id, id)).get();
   return ok(toEpisode(row!));
+}
+
+export function findEpisodeBySlug(slug: string): Episode | null {
+  const row = getDb().select().from(episodes).where(eq(episodes.slug, slug)).get();
+  return row ? toEpisode(row) : null;
+}
+
+/**
+ * Content ingest: creates the episode, or updates the authored fields of an
+ * existing one with the same slug while preserving user state (favorite,
+ * notes, takeaways ticks, progress). Returns whether it was created.
+ */
+export function upsertEpisodeBySlug(
+  input: EpisodeInput & { slug: string },
+): Result<{ episode: Episode; created: boolean }> {
+  const existing = findEpisodeBySlug(input.slug);
+  if (!existing) {
+    const r = createEpisode(input);
+    return r.ok ? ok({ episode: r.data, created: true }) : r;
+  }
+  const r = updateEpisode(existing.id, {
+    title: input.title,
+    titleEn: input.titleEn ?? null,
+    author: input.author,
+    authorEn: input.authorEn ?? null,
+    year: input.year ?? null,
+    domain: input.domain,
+    kind: input.kind,
+    message: input.message,
+    summaryMd: input.summaryMd,
+    script: input.script,
+    performedScript: input.performedScript ?? null,
+    takeaways: input.takeaways,
+    caveat: input.caveat,
+    knowledgeToday: input.knowledgeToday ?? null,
+    ...(input.coverUrl ? { coverUrl: input.coverUrl } : {}),
+  });
+  return r.ok ? ok({ episode: r.data, created: false }) : r;
 }
 
 export function countEpisodes(): number {

@@ -14,6 +14,8 @@ export const episodes = sqliteTable(
   "episodes",
   {
     id: text("id").primaryKey(),
+    /** Stable content key for episodes authored in content/episodes/*.json (ingest upserts by it). */
+    slug: text("slug").unique(),
     title: text("title").notNull(),
     titleEn: text("title_en"),
     author: text("author").notNull(),

@@ -23,7 +23,10 @@
     "db:seed": "tsx scripts/seed.ts",
     "backup": "tsx scripts/backup.ts",
     "lighthouse": "node scripts/lighthouse.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "ingest": "tsx scripts/ingest.ts",
+    "voices": "tsx scripts/voices.ts",
+    "set-voice": "tsx scripts/set-voice.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",

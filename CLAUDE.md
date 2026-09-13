@@ -30,6 +30,10 @@ npx playwright test tests/e2e/narrate.spec.ts         # single e2e spec
 npm run db:generate    # drizzle-kit generate migrations from src/server/db/schema.ts
 npm run db:migrate     # apply migrations to data/pagecast.db
 npm run backup         # JSON export + zip of data/audio into data/backups/
+npm run voices         # rank account voices + render 20s Hebrew samples to data/previews/samples/
+npm run set-voice -- <voiceId>   # choose the narrator (persisted in settings)
+npm run ingest         # upsert content/episodes/*.json into the library (by slug)
+npm run ingest -- --produce      # …and narrate missing/stale episodes with ElevenLabs
 npm run lighthouse     # mobile Lighthouse against a production build
 ```
 
@@ -38,6 +42,14 @@ Requires Node ≥ 20 and `ffmpeg` on PATH for narration stitching (`winget insta
 ## Stack (fixed — do not swap)
 
 Next.js 15 App Router + TypeScript strict + Tailwind CSS 4. SQLite via `better-sqlite3` + Drizzle ORM (`data/pagecast.db`), MP3s in `data/audio/`. `zustand`, `framer-motion`, `lucide-react`, `zod`, `@anthropic-ai/sdk`. Fonts: Heebo (Hebrew) + Inter (Latin) via `next/font`. Tests: Vitest + Playwright.
+
+## Content model (decided 2026-09-13)
+
+The owner wants no API dependency inside the running app. Episodes are **authored** as
+`content/episodes/<slug>.json` (summary, script and a pre-written `performedScript` written by
+Claude in the coding session with the book-message-expert skill), then `npm run ingest --produce`
+narrates them once with the owner's ElevenLabs key. The app is the library and player; the in-app
+narration and AI-generation routes remain available but are optional.
 
 ## Architecture
 
