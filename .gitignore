@@ -3,8 +3,8 @@
 node_modules
 .next
 out
-data/
-*.mp3
+/data/
+/data/**/*.mp3
 coverage
 playwright-report
 test-results
