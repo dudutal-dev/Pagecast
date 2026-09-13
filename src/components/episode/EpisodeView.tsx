@@ -13,7 +13,6 @@ import { CardSvg } from "@/components/library/CardSvg";
 import { Tabs } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { Tag } from "@/components/ui/Chip";
-import { useToast } from "@/components/ui/Toast";
 import { DockedPlayer } from "@/components/player/DockedPlayer";
 import { EpisodeActions } from "./EpisodeActions";
 import { TranscriptView } from "./TranscriptView";
@@ -31,7 +30,6 @@ const TABS: { key: TabKey; label: string }[] = [
 export function EpisodeView({ initial }: { initial: EpisodeWithAudio }) {
   const [ep, setEp] = useState(initial);
   const [tab, setTab] = useState<TabKey>("summary");
-  const toast = useToast();
   const reduce = useReducedMotion();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
@@ -168,20 +166,25 @@ export function EpisodeView({ initial }: { initial: EpisodeWithAudio }) {
                     : `השמע · ${formatMinutes(ep.audio!.durationSec)}`}
               </Button>
             ) : (
-              <Button
-                size="lg"
-                variant="secondary"
-                icon={<Mic2 size={18} aria-hidden />}
-                className="min-w-48"
-                onClick={() =>
-                  toast.info(
-                    "הפקת קריינות מגיעה באבן הדרך הבאה",
-                    "בינתיים אפשר לקרוא את התקציר והתסריט.",
-                  )
-                }
+              <Link href={`/episodes/${ep.id}/narrate`}>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  icon={<Mic2 size={18} aria-hidden />}
+                  className="min-w-48"
+                >
+                  הפק קריינות
+                </Button>
+              </Link>
+            )}
+            {hasAudio && (
+              <Link
+                href={`/episodes/${ep.id}/narrate`}
+                className="flex h-9 items-center gap-1 text-xs text-muted hover:text-text"
               >
-                הפק קריינות
-              </Button>
+                <Mic2 size={14} aria-hidden />
+                הפק מחדש או ערוך את התסריט המבוצע
+              </Link>
             )}
             <EpisodeActions
               episode={ep}
