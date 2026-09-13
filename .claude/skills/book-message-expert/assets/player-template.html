@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} — הקראה</title>
+<style>
+  :root{--bg:#14110F;--card:#1F1B18;--txt:#F5F0E8;--muted:#A89F93;--acc:#C9A961;--hl:#3A2F1C}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:Heebo,Assistant,Arial,sans-serif;line-height:1.7}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 120px}
+  header{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+  header img,header svg{width:96px;height:128px;border-radius:8px;object-fit:cover;flex:none}
+  h1{font-size:22px;margin:0 0 4px}.meta{color:var(--muted);font-size:14px}
+  .msg{background:var(--card);border-right:4px solid var(--acc);padding:12px 14px;border-radius:8px;margin:14px 0;font-weight:600}
+  .script p{margin:0 0 12px;transition:background .2s;border-radius:6px;padding:2px 6px}
+  .script p.now{background:var(--hl)}
+  .bar{position:fixed;bottom:0;right:0;left:0;background:var(--card);padding:12px 16px;display:flex;flex-direction:column;gap:8px;border-top:1px solid #2c2622}
+  .row{display:flex;gap:8px;align-items:center;justify-content:center}
+  button{background:var(--acc);color:#1a1510;border:0;border-radius:999px;min-width:44px;height:44px;padding:0 18px;font-size:16px;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--txt);border:1px solid #4a4038}
+  select,input[type=range]{background:var(--bg);color:var(--txt);border:1px solid #4a4038;border-radius:8px;padding:6px}
+  .small{font-size:12px;color:var(--muted);text-align:center}
+  progress{width:100%;height:6px;accent-color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <!-- כריכה אמיתית (קישור) או איור מקורי (SVG מוטמע) -->
+    {{COVER_HTML}}
+    <div><h1>{{TITLE}}</h1><div class="meta">{{AUTHOR}} · {{YEAR}} · {{DOMAIN}}</div></div>
+  </header>
+  <div class="msg">{{MESSAGE}}</div>
+  <div class="script" id="script"></div>
+</div>
+<div class="bar">
+  <progress id="prog" value="0" max="1"></progress>
+  <div class="row">
+    <button class="ghost" id="back" title="משפט אחורה">⏮</button>
+    <button id="play">▶ השמע</button>
+    <button class="ghost" id="fwd" title="משפט קדימה">⏭</button>
+  </div>
+  <div class="row">
+    <label class="small">קול <select id="voice"></select></label>
+    <label class="small">מהירות <input id="rate" type="range" min="0.7" max="1.4" step="0.05" value="0.95"></label>
+  </div>
+  <div class="small" id="status">Web Speech API — עובד ללא רשת; ב-iOS ההקראה נעצרת כשהאפליקציה ברקע.</div>
+</div>
+<script>
+// === הכנס כאן את תסריט הקריינות (פסקאות מופרדות בשורה ריקה) ===
+const SCRIPT = `{{SCRIPT}}`;
+
+const paras = SCRIPT.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+const sentences = [];
+paras.forEach((p,pi)=>{ (p.match(/[^.!?؟]+[.!?؟]*/g)||[p]).map(s=>s.trim()).filter(Boolean).forEach(s=>sentences.push({t:s,p:pi})); });
+const box = document.getElementById('script');
+paras.forEach((p,i)=>{ const el=document.createElement('p'); el.id='p'+i; el.textContent=p; box.appendChild(el); });
+
+const synth = window.speechSynthesis; let idx=0, playing=false, utter=null;
+const voiceSel=document.getElementById('voice'), rate=document.getElementById('rate'), status=document.getElementById('status'), prog=document.getElementById('prog');
+function loadVoices(){ const vs=synth.getVoices(); voiceSel.innerHTML='';
+  const he=vs.filter(v=>v.lang && v.lang.toLowerCase().startsWith('he')); const list=he.length?he:vs;
+  list.forEach(v=>{const o=document.createElement('option');o.value=v.voiceURI;o.textContent=v.name+' ('+v.lang+')';voiceSel.appendChild(o);});
+  if(!he.length) status.textContent='לא נמצא קול עברי במכשיר — מוצג קול ברירת מחדל. ב-Android: התקן "Google Text-to-Speech" ושפה עברית; ב-iOS: הגדרות ← נגישות ← תוכן מדובר ← קולות ← עברית.';
+}
+loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices;
+function highlight(){ document.querySelectorAll('.script p').forEach(e=>e.classList.remove('now'));
+  const s=sentences[idx]; if(!s) return; const el=document.getElementById('p'+s.p); el.classList.add('now'); el.scrollIntoView({block:'center',behavior:'smooth'}); prog.value=idx/sentences.length; }
+function speakCurrent(){ if(idx>=sentences.length){ stop(); prog.value=1; return; }
+  highlight(); utter=new SpeechSynthesisUtterance(sentences[idx].t); utter.lang='he-IL'; utter.rate=parseFloat(rate.value);
+  const v=synth.getVoices().find(v=>v.voiceURI===voiceSel.value); if(v) utter.voice=v;
+  utter.onend=()=>{ if(playing){ idx++; setTimeout(speakCurrent, /[.!?]$/.test(sentences[idx-1]?.t||'')?250:80); } };
+  utter.onerror=e=>{ status.textContent='שגיאת הקראה: '+e.error; stop(); };
+  synth.speak(utter); }
+function play(){ if(!sentences.length) return; playing=true; document.getElementById('play').textContent='⏸ השהה'; speakCurrent(); }
+function stop(){ playing=false; synth.cancel(); document.getElementById('play').textContent='▶ השמע'; }
+document.getElementById('play').onclick=()=> playing?stop():play();
+document.getElementById('back').onclick=()=>{ const was=playing; synth.cancel(); playing=false; idx=Math.max(0,idx-1); highlight(); if(was) play(); };
+document.getElementById('fwd').onclick=()=>{ const was=playing; synth.cancel(); playing=false; idx=Math.min(sentences.length-1,idx+1); highlight(); if(was) play(); };
+rate.onchange=()=>{ if(playing){ synth.cancel(); playing=false; play(); } };
+window.addEventListener('beforeunload',()=>synth.cancel());
+</script>
+</body>
+</html>
