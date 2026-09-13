@@ -116,6 +116,16 @@ async function main() {
     });
   }
 
+  // Remove audio files that are no longer referenced (stale or held back).
+  const keep = new Set(
+    (out as { audio: string | null }[])
+      .map((e) => e.audio && path.basename(e.audio))
+      .filter(Boolean),
+  );
+  for (const f of fs.readdirSync(path.join(SITE, "audio"))) {
+    if (f.endsWith(".mp3") && !keep.has(f)) fs.rmSync(path.join(SITE, "audio", f));
+  }
+
   fs.writeFileSync(
     path.join(SITE, "data/episodes.json"),
     JSON.stringify({
