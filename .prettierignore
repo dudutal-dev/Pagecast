@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+data
+drizzle/meta
+playwright-report
+test-results
+coverage
+package-lock.json
+.claude/skills
+pagecast-claude-code-prompt.md
+public/sw.js

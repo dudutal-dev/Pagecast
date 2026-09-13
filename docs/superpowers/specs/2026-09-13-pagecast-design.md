@@ -9,32 +9,39 @@
 ## 2. החלטות ארכיטקטורה (ADR)
 
 ### ADR-001: Next.js 15 App Router כ-full-stack יחיד
+
 - **הקשר:** צריך UI + backend שמחזיק מפתחות API בסתר, ללא שרת נפרד.
 - **החלטה:** Route Handlers בתוך Next. הקליינט לעולם לא רואה מפתח.
 - **השלכות:** deploy ל-Vercel עתידי דורש רק env vars + החלפת StorageProvider.
 
 ### ADR-002: SQLite (better-sqlite3 + Drizzle) + MP3 על דיסק
+
 - **הקשר:** משתמש יחיד, מקומי, נתונים קטנים (טקסט) + קבצי אודיו של כמה MB.
 - **החלטה:** `data/pagecast.db` ל-metadata, `data/audio/<episodeId>/<hash>.mp3` לאודיו. שניהם מחוץ ל-git.
 - **סיכון:** `better-sqlite3` הוא מודול native. Node 24 מותקן במחשב; אם ה-prebuilt לא זמין, נופלים ל-`node:sqlite` המובנה דרך שכבת DB דקה (אותו SQL, Drizzle לא חובה). ההחלטה תיבדק בפועל באבן דרך 1 לפני שמתקדמים.
 
 ### ADR-003: ספקים חיצוניים מאחורי ממשקים, עם מימוש מזויף
+
 - `TtsProvider` (ElevenLabs / Fake), `LlmProvider` (Anthropic / Fake), `StorageProvider` (LocalFs / בעתיד Blob), `CoverSearchProvider` (OpenLibrary+GoogleBooks / Fake).
 - `PAGECAST_MOCK_PROVIDERS=1` בוחר את המזויפים. Playwright רץ כך: אפס רשת, אפס עלות, דטרמיניסטי.
 - ה-Fake TTS מייצר MP3 שקט באורך פרופורציונלי לטקסט (עם ffmpeg אם קיים, אחרת קובץ MP3 מינימלי קבוע) כדי שהנגן והסנכרון ייבדקו באמת.
 
 ### ADR-004: "במאי קריינות" הוא שלב נפרד ונשמר
+
 - התסריט הכתוב (`script`) והתסריט המבוצע (`performedScript`) הם שני שדות. המשתמש רואה ועורך את המבוצע לפני הפקה.
 - `scriptHash = sha256(performedScript + voiceId + modelId + JSON(voiceSettings))`. הפקה מחדש רק אם השתנה.
 
 ### ADR-005: סנכרון טרנסקריפט מ-alignment אמיתי
+
 - ElevenLabs `with-timestamps` מחזיר alignment ברמת תו לכל chunk. מצרפים עם offset מצטבר, ממפים לגבולות משפטים, ושומרים `alignment: {sentences: [{start, end, text}]}` ב-`audio_assets`.
 - fallback: הערכה לפי מילים (150 מילים לדקה) כשה-alignment חסר (Fake, או קול ישן).
 
 ### ADR-006: נגן גלובלי אחד
+
 - `<audio>` יחיד ב-root layout, מנוהל ע"י zustand store. עובר בין מסכים בלי להפסיק. MediaSession לנעילת מסך. אין iframes, אין ספריית נגן חיצונית.
 
 ### ADR-007: PWA ידני ומינימלי
+
 - `public/manifest.webmanifest` + `public/sw.js` שנכתב ידנית (בלי Workbox): cache-first ל-app shell ולסטטי, network-first ל-`/api/**`, ו-Cache API ייעודי לאודיו לפי בקשה ("שמור לאופליין" בעמוד הפרק). פרקים שהופקו ונשמרו מנוגנים אופליין.
 
 ## 3. מבנה תיקיות
@@ -118,27 +125,28 @@ pagecast/
 טיפוסים מוגדרים פעם אחת ב-zod (`src/lib/schemas`) ומהם נגזרים גם טבלאות Drizzle וגם טיפוסי TS.
 
 **episodes**
-| שדה | טיפוס | הערות |
-|---|---|---|
-| id | text PK | `ep_<ulid>` |
-| title, titleEn, author, authorEn | text | titleEn/authorEn אופציונליים |
-| year | int? | |
-| domain | text | אחד מ-14 |
-| kind | `nonfiction` \| `fiction` | |
-| message | text | המסר במשפט אחד (hero) |
-| summaryMd | text | |
-| script | text | התסריט הכתוב |
-| performedScript | text? | פלט הבמאי, אחרי עריכת המשתמש |
-| takeaways | json string[] | |
-| caveat | text | הסתייגות |
-| knowledgeToday | text? | "מצב הידע היום" |
-| coverUrl | text? | קישור בלבד |
-| cardSvg | text | נוצר בשרת בעת יצירה |
-| status | `new` \| `in_progress` \| `done` | נגזר מ-progress, נשמר לצורך סינון |
-| favorite | bool | |
-| notes | text | |
-| takeawaysDone | json bool[] | checklist |
-| createdAt, updatedAt | text ISO | |
+
+| שדה                              | טיפוס                            | הערות                             |
+| -------------------------------- | -------------------------------- | --------------------------------- |
+| id                               | text PK                          | `ep_<ulid>`                       |
+| title, titleEn, author, authorEn | text                             | titleEn/authorEn אופציונליים      |
+| year                             | int?                             |                                   |
+| domain                           | text                             | אחד מ-14                          |
+| kind                             | `nonfiction` \| `fiction`        |                                   |
+| message                          | text                             | המסר במשפט אחד (hero)             |
+| summaryMd                        | text                             |                                   |
+| script                           | text                             | התסריט הכתוב                      |
+| performedScript                  | text?                            | פלט הבמאי, אחרי עריכת המשתמש      |
+| takeaways                        | json string[]                    |                                   |
+| caveat                           | text                             | הסתייגות                          |
+| knowledgeToday                   | text?                            | "מצב הידע היום"                   |
+| coverUrl                         | text?                            | קישור בלבד                        |
+| cardSvg                          | text                             | נוצר בשרת בעת יצירה               |
+| status                           | `new` \| `in_progress` \| `done` | נגזר מ-progress, נשמר לצורך סינון |
+| favorite                         | bool                             |                                   |
+| notes                            | text                             |                                   |
+| takeawaysDone                    | json bool[]                      | checklist                         |
+| createdAt, updatedAt             | text ISO                         |                                   |
 
 **audio_assets**: id, episodeId (FK, unique), path, durationSec, sizeBytes, voiceId, modelId, voiceSettings (json), scriptHash, alignment (json?), createdAt.
 
@@ -161,6 +169,7 @@ script ──(1) /direct: Claude, system=director.system.md──▶ performedSc
         ──(6) ffmpeg concat → 128kbps mono/stereo לפי המקור──▶ data/audio/<ep>/<hash>.mp3
         ──(7) alignment ממוזג → משפטים; audio_assets upsert; SSE done
 ```
+
 - SSE events: `{stage, chunk, total, etaSec, message}` → `done {assetId, durationSec}` או `error {code, hint}`.
 - קודי שגיאה ידידותיים: `NO_API_KEY`, `INVALID_API_KEY`, `NO_FFMPEG`, `QUOTA_EXCEEDED`, `VOICE_NOT_FOUND`, `MODEL_UNAVAILABLE` (נופל אוטומטית ל-multilingual_v2 ומדווח).
 - תגי ביטוי של v3 (`[pause]`, `[warm]`…) נשארים בטקסט רק כשהמודל הוא v3; ל-v2 הם מוסרים ומומרים ל-פיסוק/שורות ריקות.
@@ -178,14 +187,14 @@ script ──(1) /direct: Claude, system=director.system.md──▶ performedSc
 
 ## 7. מסכים (mobile-first)
 
-| # | מסך | עיקרי | מצבים |
-|---|---|---|---|
-| 1 | ספרייה `/` | grid 2/4, כרטיס 3:4 עם `cardSvg`, כותר, מחבר, צ'יפ תחום, משך, נקודת סטטוס; חיפוש, 14 צ'יפים, מיון (חדש/א"ב/משך/לא-הושמע); pull-to-refresh; FAB ＋ | ריק (CTA ליצירה), טעינה (skeleton), ללא תוצאות |
-| 2 | פרק `/episodes/[id]` | כריכה עם parallax, hero של המסר, לשוניות תקציר/תסריט/לקחת הביתה/הערות, נגן צף, פעולות (מועדף, הושמע, שתף, שמור לאופליין, הפק/הפק מחדש, מחק) | אין אודיו (CTA להפקה), הפקה בתהליך, אופליין |
-| 3 | פרק חדש `/new` | 3 לשוניות: AI / JSON / ידני; זרימת AI: טופס → צילום כריכה אופציונלי → SSE progress → preview → cover picker → שמירה | unknown book, JSON פגום (שגיאות שדה-שדה), מפתח חסר |
-| 4 | מסלולים `/playlists` | רשימה, יצירה, מסך מסלול עם גרירה (framer-motion Reorder), השמעה רציפה + ג'ינגל WebAudio | ריק |
-| 5 | הגדרות `/settings` | קול (מסך משנה), סליידרים עם preview, שם פודקאסט ומנחה, מהירות, ערכת נושא, גיבוי/שחזור, סטטיסטיקות, אזור סכנה | |
-| 6 | פתיחה `/onboarding` | 3 מסכים: מה זה → בחר קול → צור פרק ראשון; מוצג פעם אחת | דילוג |
+| #   | מסך                  | עיקרי                                                                                                                                             | מצבים                                              |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| 1   | ספרייה `/`           | grid 2/4, כרטיס 3:4 עם `cardSvg`, כותר, מחבר, צ'יפ תחום, משך, נקודת סטטוס; חיפוש, 14 צ'יפים, מיון (חדש/א"ב/משך/לא-הושמע); pull-to-refresh; FAB ＋ | ריק (CTA ליצירה), טעינה (skeleton), ללא תוצאות     |
+| 2   | פרק `/episodes/[id]` | כריכה עם parallax, hero של המסר, לשוניות תקציר/תסריט/לקחת הביתה/הערות, נגן צף, פעולות (מועדף, הושמע, שתף, שמור לאופליין, הפק/הפק מחדש, מחק)       | אין אודיו (CTA להפקה), הפקה בתהליך, אופליין        |
+| 3   | פרק חדש `/new`       | 3 לשוניות: AI / JSON / ידני; זרימת AI: טופס → צילום כריכה אופציונלי → SSE progress → preview → cover picker → שמירה                               | unknown book, JSON פגום (שגיאות שדה-שדה), מפתח חסר |
+| 4   | מסלולים `/playlists` | רשימה, יצירה, מסך מסלול עם גרירה (framer-motion Reorder), השמעה רציפה + ג'ינגל WebAudio                                                           | ריק                                                |
+| 5   | הגדרות `/settings`   | קול (מסך משנה), סליידרים עם preview, שם פודקאסט ומנחה, מהירות, ערכת נושא, גיבוי/שחזור, סטטיסטיקות, אזור סכנה                                      |                                                    |
+| 6   | פתיחה `/onboarding`  | 3 מסכים: מה זה → בחר קול → צור פרק ראשון; מוצג פעם אחת                                                                                            | דילוג                                              |
 
 ניווט: BottomNav (ספרייה, מסלולים, ＋, הגדרות) עם safe-area; MiniPlayer מעל ה-nav כשמנגן.
 
@@ -209,14 +218,14 @@ script ──(1) /direct: Claude, system=director.system.md──▶ performedSc
 
 ## 10. אבני דרך
 
-| # | תוכן | תוצר נבדק | commit |
-|---|---|---|---|
-| 1 | שלד Next 15 + Tailwind 4 + tokens + fonts + RTL; DB + migrations + schemas; providers factory + fakes; ספרייה עם empty state, חיפוש/סינון/מיון על seed; BottomNav; `npm run check` + husky + Vitest | `npm run dev` מציג ספרייה עם פרק seed (פרנקל), בדיקות schemas/bookCard עוברות | `feat: project skeleton, db, library` |
-| 2 | עמוד פרק, לשוניות, נגן גלובלי + MiniPlayer, `/api/audio` Range, טרנסקריפט מסונכרן (alignment + fallback), progress, מועדף/הושמע/שתף/מחק | Fake TTS מייצר אודיו לפרק ה-seed; הדגשה זזה; progress שורד reload | `feat: episode page and player` |
-| 3 | `/api/voices`, preview, מסך בחירת קול, במאי קריינות + עריכה, preprocess/chunk/hash, הפקה SSE + ffmpeg + alignment, אומדן מחיר, שגיאות ידידותיות | הפקה אמיתית מול ElevenLabs עם המפתח שלך | `feat: narration pipeline` — **עצירה: אתה מאזין ובוחר קול** |
-| 4 | `/api/generate` SSE + prompts מקומפלים, `/api/identify` vision, הדבקת JSON, טופס ידני, `/api/cover`, cover picker, preview | פרק חדש מכל שלוש הדרכים | `feat: episode creation` |
-| 5 | מסלולים + גרירה + השמעה רציפה + ג'ינגל + MediaSession, הגדרות מלאות, onboarding, PWA (manifest, sw, אייקונים, אופליין לאודיו), backup/restore | התקנה למסך הבית, פרק מנוגן אופליין | `feat: playlists, settings, pwa` |
-| 6 | Playwright ×3, QA לפי המתודולוגיה + תיקונים, Lighthouse, README דו-לשוני עם צילומים, `.env.example`, MIT, GitHub Action, בדיקת סודות | דוח QA, Lighthouse ≥ 95 | `chore: qa, docs, ci` |
+| #   | תוכן                                                                                                                                                                                                | תוצר נבדק                                                                     | commit                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | שלד Next 15 + Tailwind 4 + tokens + fonts + RTL; DB + migrations + schemas; providers factory + fakes; ספרייה עם empty state, חיפוש/סינון/מיון על seed; BottomNav; `npm run check` + husky + Vitest | `npm run dev` מציג ספרייה עם פרק seed (פרנקל), בדיקות schemas/bookCard עוברות | `feat: project skeleton, db, library`                       |
+| 2   | עמוד פרק, לשוניות, נגן גלובלי + MiniPlayer, `/api/audio` Range, טרנסקריפט מסונכרן (alignment + fallback), progress, מועדף/הושמע/שתף/מחק                                                             | Fake TTS מייצר אודיו לפרק ה-seed; הדגשה זזה; progress שורד reload             | `feat: episode page and player`                             |
+| 3   | `/api/voices`, preview, מסך בחירת קול, במאי קריינות + עריכה, preprocess/chunk/hash, הפקה SSE + ffmpeg + alignment, אומדן מחיר, שגיאות ידידותיות                                                     | הפקה אמיתית מול ElevenLabs עם המפתח שלך                                       | `feat: narration pipeline` — **עצירה: אתה מאזין ובוחר קול** |
+| 4   | `/api/generate` SSE + prompts מקומפלים, `/api/identify` vision, הדבקת JSON, טופס ידני, `/api/cover`, cover picker, preview                                                                          | פרק חדש מכל שלוש הדרכים                                                       | `feat: episode creation`                                    |
+| 5   | מסלולים + גרירה + השמעה רציפה + ג'ינגל + MediaSession, הגדרות מלאות, onboarding, PWA (manifest, sw, אייקונים, אופליין לאודיו), backup/restore                                                       | התקנה למסך הבית, פרק מנוגן אופליין                                            | `feat: playlists, settings, pwa`                            |
+| 6   | Playwright ×3, QA לפי המתודולוגיה + תיקונים, Lighthouse, README דו-לשוני עם צילומים, `.env.example`, MIT, GitHub Action, בדיקת סודות                                                                | דוח QA, Lighthouse ≥ 95                                                       | `chore: qa, docs, ci`                                       |
 
 אחרי כל אבן דרך: סיכום קצר של מה נבנה, מה נבדק, מה הלאה.
 
