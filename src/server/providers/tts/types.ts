@@ -33,8 +33,22 @@ export interface SynthesizeResult {
   model: VoiceModel;
 }
 
+/** One turn of a two-speaker conversation. */
+export interface DialogueTurn {
+  voiceId: string;
+  text: string;
+}
+
 export interface TtsProvider {
   readonly name: "elevenlabs" | "fake";
   listVoices(): Promise<VoiceInfo[]>;
   synthesize(text: string, opts: SynthesizeOptions): Promise<SynthesizeResult>;
+  /**
+   * Multi-speaker take: the provider renders the whole exchange in one pass, so
+   * the voices react to each other instead of being stitched from solo reads.
+   */
+  synthesizeDialogue(
+    turns: DialogueTurn[],
+    opts: { model: VoiceModel; stability: number; languageCode?: string },
+  ): Promise<{ audio: Buffer; model: VoiceModel }>;
 }

@@ -76,8 +76,8 @@ export function home(eps, st, stats) {
   return `<section class="cover">
     <div class="cover-inner">
       <div class="cover-ornament"><img src="assets/icons/icon-512.png" alt=""></div>
-      <h1>פייג'קאסט</h1>
-      <div class="en-title">Pagecast · Books, Narrated</div>
+      <h1 class="brand-title">PAGECAST</h1>
+      <div class="en-title">Books, Narrated</div>
       <div class="sub-title">פודקאסט הספרים: תקציר עם מסר לכל ספר, בקריינות עברית</div>
       <div class="cover-tag">${stats.count} ספרים · ${stats.narrated} מוקראים · ${stats.minutes} דקות האזנה</div>
       <div class="cover-tiles">${featured.map((e) => `<a class="tile" href="#/book/${e.slug}"><span class="tile-img"><img src="${e.illustration}" alt=""></span><span class="tile-name">${esc(e.title)}</span><span class="tile-sub">${esc(e.author)}</span></a>`).join("")}</div>
@@ -247,9 +247,9 @@ export function settings(st, info) {
 
 export function about(info) {
   return `<div class="section-title"><h2>אודות</h2></div>
-  <div class="book-frame"><span class="running-head">פייג'קאסט</span>
+  <div class="book-frame"><span class="running-head">PAGECAST</span>
   <div class="prose">
-    <p><strong>פייג'קאסט</strong> הוא פודקאסט ספרים אישי: לכל ספר תקציר במילים שלנו, עם המסר שהמחבר התכוון אליו, תסריט קריינות שנכתב לאוזן, קריינות בעברית בקול אנושי, ואיור מקורי.</p>
+    <p><strong>PAGECAST</strong> הוא פודקאסט ספרים אישי: לכל ספר תקציר במילים שלנו, עם המסר שהמחבר התכוון אליו, תסריט קריינות שנכתב לאוזן, קריינות בעברית בקול אנושי, ואיור מקורי.</p>
     <p>התקצירים אינם תחליף לספרים ואינם מצטטים מהם. הם כתובים במילים שלנו, דעות מסומנות כדעות, ובספרים עם טענות מדעיות או כספיות מופיעה שורת "מצב הידע היום". הזכויות על הספרים שייכות למחבריהם ולמוציאים לאור.</p>
     <p>האפליקציה עובדת אופליין ואינה שולחת שום דבר לשום שרת. ההתקדמות, ההערות והמסלולים נשמרים במכשיר בלבד.</p>
     <p class="muted small">גרסת תוכן ${esc(info.version)} · ${info.count} ספרים · הקריינות הופקה עם ElevenLabs, האיורים הופקו במיוחד עבור הספרייה · © דודו טל</p>

@@ -1372,3 +1372,20 @@ body {
     font-size: 13px;
   }
 }
+
+/* App name is set in English: Latin display face, letterspaced like the plates */
+.brand-he {
+  font-family: var(--font-en);
+  letter-spacing: 0.12em;
+  font-size: 20px;
+  direction: ltr;
+}
+.cover h1.brand-title {
+  font-family: var(--font-en);
+  letter-spacing: 0.1em;
+  direction: ltr;
+  font-size: clamp(40px, 7.5vw, 78px);
+}
+.running-head {
+  direction: ltr;
+}

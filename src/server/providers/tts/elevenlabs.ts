@@ -69,6 +69,35 @@ export class ElevenLabsProvider implements TtsProvider {
     }));
   }
 
+  /**
+   * Text-to-dialogue: the provider renders the whole exchange in one pass, so the
+   * speakers react to each other. Capped by the API at 2,000 characters and 10
+   * distinct voices per request.
+   */
+  async synthesizeDialogue(
+    turns: { voiceId: string; text: string }[],
+    opts: { model: VoiceModel; stability: number; languageCode?: string },
+  ): Promise<{ audio: Buffer; model: VoiceModel }> {
+    const res = await this.fetchWithRetry(
+      `${BASE}/text-to-dialogue?output_format=${OUTPUT_FORMAT}`,
+      {
+        method: "POST",
+        headers: {
+          "xi-api-key": this.key(),
+          "content-type": "application/json",
+          accept: "audio/mpeg",
+        },
+        body: JSON.stringify({
+          inputs: turns.map((t) => ({ text: t.text, voice_id: t.voiceId })),
+          model_id: opts.model,
+          settings: { stability: opts.stability },
+          ...(opts.languageCode ? { language_code: opts.languageCode } : {}),
+        }),
+      },
+    );
+    return { audio: Buffer.from(await res.arrayBuffer()), model: opts.model };
+  }
+
   async synthesize(text: string, opts: SynthesizeOptions): Promise<SynthesizeResult> {
     try {
       return await this.synthesizeWith(text, opts, opts.model);

@@ -56,6 +56,15 @@ export class FakeTtsProvider implements TtsProvider {
     ];
   }
 
+  async synthesizeDialogue(
+    turns: { voiceId: string; text: string }[],
+    opts: { model: SynthesizeOptions["model"]; stability: number },
+  ): Promise<{ audio: Buffer; model: SynthesizeOptions["model"] }> {
+    const words = turns.reduce((a, t) => a + countWords(t.text), 0);
+    const durationSec = Math.max(1, Math.round((words / 150) * 60));
+    return { audio: await makeTone(durationSec), model: opts.model };
+  }
+
   async synthesize(text: string, opts: SynthesizeOptions): Promise<SynthesizeResult> {
     const durationSec = Math.max(1, Math.round((countWords(text) / 150) * 60));
     const audio = await makeTone(durationSec);

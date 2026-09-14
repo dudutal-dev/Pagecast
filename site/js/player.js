@@ -111,7 +111,7 @@ function mediaSession() {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: ep.title,
     artist: ep.author,
-    album: "פייג'קאסט",
+    album: "PAGECAST",
     artwork: [
       {
         src: new URL(ep.illustration, location.href).href,

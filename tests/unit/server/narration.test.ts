@@ -138,7 +138,8 @@ describe("produceNarration (fake TTS)", () => {
     if (!ep.ok) throw new Error("setup");
     const est = estimateNarration(ep.data.id);
     expect(est.ok && est.data.upToDate).toBe(false);
-    expect(est.ok && est.data.chunks).toBe(1);
+    // ~2,800 chars is more than one request's safe length (the provider stops at ~200s).
+    expect(est.ok && est.data.chunks).toBe(2);
     expect(est.ok && est.data.chars).toBeGreaterThan(1000);
 
     const stages: string[] = [];
@@ -149,13 +150,15 @@ describe("produceNarration (fake TTS)", () => {
     if (!r.ok) return;
     expect(r.data.skipped).toBe(false);
     expect(r.data.durationSec).toBeGreaterThan(60);
-    expect(stages).toEqual([
+    // One "synthesizing" event per chunk, then the tail stages once each.
+    expect([...new Set(stages)]).toEqual([
       "preparing",
       "synthesizing",
       "stitching",
       "aligning",
       "saving",
     ]);
+    expect(stages.filter((s) => s === "synthesizing").length).toBe(2);
     const withAudio = getEpisode(ep.data.id);
     expect(withAudio.ok && withAudio.data.audio?.hasAlignment).toBe(true);
     expect(

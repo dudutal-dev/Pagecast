@@ -28,7 +28,9 @@
     "voices": "tsx scripts/voices.ts",
     "set-voice": "tsx scripts/set-voice.ts",
     "illustrations": "tsx scripts/illustrations.ts",
-    "export-site": "tsx scripts/export-site.ts"
+    "export-site": "tsx scripts/export-site.ts",
+    "verify-audio": "tsx scripts/verify-audio.ts",
+    "dialogue": "tsx scripts/produce-dialogue.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",

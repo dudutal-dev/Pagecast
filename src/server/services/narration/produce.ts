@@ -17,6 +17,21 @@ import { countWords } from "@/lib/narration/sentences";
 import { AppError, fail, ok, type Result } from "@/lib/result";
 import type { Settings } from "@/lib/schemas/settings";
 
+/** A chunk is complete when the provider spoke ~all of the characters we sent. */
+const COMPLETE_THRESHOLD = 0.98;
+
+/** Fraction of the sent (non-whitespace) characters the provider actually spoke. */
+export function coverage(
+  text: string,
+  alignment: { characters: string[] } | null | undefined,
+): number {
+  if (!alignment || alignment.characters.length === 0) return 1; // no timestamps: cannot tell
+  const sent = text.replace(/\s/g, "").length;
+  if (sent === 0) return 1;
+  const spoken = alignment.characters.filter((c) => !/\s/.test(c)).length;
+  return Math.min(1, spoken / sent);
+}
+
 export interface NarrationEstimate {
   episodeId: string;
   voiceId: string | null;
@@ -156,42 +171,66 @@ export async function produceNarration(
   const startedAt = Date.now();
 
   try {
-    for (const chunk of chunks) {
+    // Queue, not a plain loop: a chunk the provider truncated is split and requeued.
+    const queue = chunks.map((c) => c.text);
+    while (queue.length) {
       if (opts.signal?.aborted) return fail("PROVIDER_ERROR", "ההפקה בוטלה");
-      const done = chunk.index;
+      const text = queue.shift()!;
+      const done = parts.length;
+      const total = done + queue.length + 1;
       const elapsed = (Date.now() - startedAt) / 1000;
-      const eta = done > 0 ? Math.round((elapsed / done) * (chunks.length - done)) : null;
+      const eta = done > 0 ? Math.round((elapsed / done) * (total - done)) : null;
       progress({
         stage: "synthesizing",
         chunk: done + 1,
-        total: chunks.length,
+        total,
         etaSec: eta,
-        message: `מקריאה קטע ${done + 1} מתוך ${chunks.length}`,
+        message: `מקריאה קטע ${done + 1} מתוך ${total}`,
       });
-      const res = await tts.synthesize(chunk.text, {
+      const res = await tts.synthesize(text, {
         voiceId: settings.voiceId,
         model: settings.voiceModel,
         settings: settings.voiceSettings,
         withTimestamps: true,
       });
       modelUsed = res.model;
-      const partPath = path.join(
-        tmpDir,
-        `part-${String(chunk.index).padStart(3, "0")}.mp3`,
-      );
+
+      // The model silently stops at ~200s of audio. Detect it and re-request in halves.
+      const spoken = coverage(text, res.alignment);
+      if (spoken < COMPLETE_THRESHOLD) {
+        const halves = chunkText(text, Math.ceil(text.length / 2)).map((c) => c.text);
+        if (halves.length > 1) {
+          logger.warn(
+            { episodeId, chars: text.length, spoken: Math.round(spoken * 100) },
+            "chunk truncated by provider, splitting",
+          );
+          queue.unshift(...halves);
+          continue; // discard the truncated take
+        }
+        return fail("PROVIDER_ERROR", "הקריינות נקטעה באמצע ולא ניתן לפצל את הקטע", {
+          hint: `הושמעו ${Math.round(spoken * 100)} אחוז מהקטע`,
+        });
+      }
+
+      const partPath = path.join(tmpDir, `part-${String(done).padStart(3, "0")}.mp3`);
       await fs.writeFile(partPath, res.audio);
       parts.push(partPath);
       const alignEnd = res.alignment?.endTimes.at(-1);
       const durationSec = ffmpeg.available
         ? await probeDurationSec(partPath)
-        : (alignEnd ?? (countWords(chunk.text) / 150) * 60);
-      perChunk.push({ text: chunk.text, alignment: res.alignment, durationSec });
+        : (alignEnd ?? (countWords(text) / 150) * 60);
+      perChunk.push({ text, alignment: res.alignment, durationSec });
+    }
+    if (parts.length > 1 && !ffmpeg.available) {
+      return fail("NO_FFMPEG", "הפרק פוצל לכמה קטעים, ואי אפשר לתפור אותם בלי ffmpeg", {
+        hint: ffmpeg.installHint,
+      });
     }
 
     progress({
       stage: "stitching",
-      chunk: chunks.length,
-      total: chunks.length,
+      chunk: parts.length,
+      total: parts.length,
       etaSec: 0,
       message: "תופר את הקטעים",
     });
@@ -203,8 +242,8 @@ export async function produceNarration(
 
     progress({
       stage: "aligning",
-      chunk: chunks.length,
-      total: chunks.length,
+      chunk: parts.length,
+      total: parts.length,
       etaSec: 0,
       message: "מסנכרן את הטרנסקריפט",
     });
@@ -224,8 +263,8 @@ export async function produceNarration(
 
     progress({
       stage: "saving",
-      chunk: chunks.length,
-      total: chunks.length,
+      chunk: parts.length,
+      total: parts.length,
       etaSec: 0,
       message: "שומר",
     });
@@ -245,14 +284,14 @@ export async function produceNarration(
     });
     if (!attached.ok) return attached;
     logger.info(
-      { episodeId, chunks: chunks.length, durationSec: totalDuration, model: modelUsed },
+      { episodeId, chunks: parts.length, durationSec: totalDuration, model: modelUsed },
       "narration produced",
     );
     return ok({
       assetId: attached.data.id,
       durationSec: totalDuration,
       sizeBytes: attached.data.sizeBytes,
-      chunks: chunks.length,
+      chunks: parts.length,
       model: modelUsed,
       skipped: false,
     });

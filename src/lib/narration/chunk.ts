@@ -1,6 +1,12 @@
 import { splitSentences } from "./sentences";
 
-export const MAX_CHUNK_CHARS = 4000;
+/**
+ * ElevenLabs accepts up to ~5,000 characters per request, but eleven_v3 stops
+ * generating at roughly 200 seconds of audio and returns the truncated take
+ * without an error. Hebrew narration runs about 11.7 characters per second, so
+ * 1,700 characters is about 145 seconds: a safe margin under that ceiling.
+ */
+export const MAX_CHUNK_CHARS = 1700;
 
 export interface Chunk {
   index: number;

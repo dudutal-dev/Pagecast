@@ -53,6 +53,26 @@ const MOTIFS: Record<string, string> = {
     "an iceberg at night with a tiny lit window at its tip above the waterline, and its vast hidden mass below the water, small fish drifting",
   "untethered-soul":
     "an open birdcage on a windowsill, a small bird flying out of it toward a bright moon, the cage door swinging",
+  "thus-spoke-zarathustra":
+    "a lone figure standing on a high mountain ridge at dawn, an eagle circling above with a serpent coiled around its neck, a rising sun behind the peaks",
+  "myth-of-sisyphus":
+    "a large round boulder resting at the foot of a steep mountain path, a single set of footprints climbing away into the rock",
+  "celestine-prophecy":
+    "an ancient rolled manuscript lying on a jungle floor, shafts of light falling through broad leaves onto it, a small stone step beside it",
+  "doors-of-perception":
+    "an open doorway standing alone in a blank wall, a glass vase of three flowers glowing on the floor beside it, light pouring through the opening",
+  "flow-csikszentmihalyi":
+    "a river curving between two rocky banks, one small empty rowing boat perfectly centred in the current, reeds along the edges",
+  "body-keeps-the-score":
+    "a calm human silhouette seen from the front, and inside the chest the fine root system of a tree, a single small leaf at the heart",
+  sapiens:
+    "a spiral path of tiny walking human figures leading from a cave mouth toward a distant skyline of towers, a hand print on the cave wall",
+  "altered-traits":
+    "a seated meditating figure in silhouette, and directly beside it the same silhouette grown into a slender tree with a full crown",
+  "stealing-fire":
+    "a lit torch being passed from one open hand to another against darkness, sparks rising from the flame",
+  "master-and-his-emissary":
+    "two birds perched on the same bare branch, one bending down to a single seed, the other lifting its head to scan a wide horizon",
 };
 
 const EMBLEM =
