@@ -12,7 +12,7 @@ let route = { name: "home" };
 let libQuery = { domain: "", sort: "newest", q: "" };
 let bookTab = "summary";
 let bookMode = "narration"; // "narration" | "dialogue"
-let userScrolledAt = 0;
+let lastRouteKey = "";
 
 /* ---------- boot ---------- */
 async function boot() {
@@ -27,7 +27,6 @@ async function boot() {
   bySlug = Object.fromEntries(DATA.episodes.map((e) => [e.slug, e]));
   player.bindCatalog((s) => bySlug[s]);
   player.onPlayer(renderPlayer);
-  player.onPlayer(syncTranscript);
   try {
     libQuery = {
       ...libQuery,
@@ -71,6 +70,11 @@ function parse() {
   return { name: "home" };
 }
 
+/** Identifies a screen, so a re-render of the same screen keeps its scroll. */
+function routeKey(r) {
+  return [r.name, r.slug, r.id].filter(Boolean).join("/");
+}
+
 function render() {
   route = parse();
   const st = store.get();
@@ -78,7 +82,12 @@ function render() {
   document
     .querySelectorAll("[data-route]")
     .forEach((a) => a.classList.toggle("active", a.dataset.route === route.name));
-  window.scrollTo({ top: 0 });
+  // Only a real navigation goes back to the top. Ticking a checkbox, switching
+  // tabs or toggling a favourite re-renders in place and must not move the page.
+  const key = routeKey(route);
+  const navigated = key !== lastRouteKey;
+  lastRouteKey = key;
+  const keptScroll = window.scrollY;
   switch (route.name) {
     case "home": {
       const narrated = DATA.episodes.filter((e) => e.audio);
@@ -133,6 +142,8 @@ function render() {
       main.innerHTML = R.about({ version: DATA.version, count: DATA.episodes.length });
       break;
   }
+  // After the new markup is in place, so the page never animates against itself.
+  window.scrollTo({ top: navigated ? 0 : keptScroll, behavior: "instant" });
 }
 
 function filtered() {
@@ -267,53 +278,8 @@ function wireBook(ep) {
       }, 600);
     });
   }
-  main.querySelectorAll(".transcript .s.click").forEach((s) =>
-    s.addEventListener("click", () => {
-      const t = Number(s.dataset.t);
-      const ps = player.current();
-      if (ps.ep && ps.ep.slug === ep.slug && ps.variant === "narration") {
-        player.seek(t);
-        player.play();
-      } else {
-        player.getAnalyser();
-        player.load(ep, { from: t, variant: "narration" });
-      }
-    }),
-  );
   void st;
 }
-
-function syncTranscript(ps) {
-  if (
-    route.name !== "book" ||
-    bookTab !== "script" ||
-    !ps.ep ||
-    ps.ep.slug !== route.slug
-  )
-    return;
-  const tr = document.getElementById("transcript");
-  if (!tr) return;
-  const prev = tr.querySelector(".s.on");
-  const cur = tr.querySelector(`.s[data-i="${ps.activeIdx}"]`);
-  if (prev === cur) return;
-  prev?.classList.remove("on");
-  if (cur) {
-    cur.classList.add("on");
-    if (Date.now() - userScrolledAt > 4000) {
-      const r = cur.getBoundingClientRect();
-      if (r.top < 120 || r.bottom > window.innerHeight * 0.55) {
-        window.scrollTo({
-          top: r.top + window.scrollY - window.innerHeight * 0.3,
-          behavior: "smooth",
-        });
-      }
-    }
-  }
-}
-window.addEventListener("wheel", () => (userScrolledAt = Date.now()), { passive: true });
-window.addEventListener("touchmove", () => (userScrolledAt = Date.now()), {
-  passive: true,
-});
 
 /* ---------- paths ---------- */
 function wirePath(p) {

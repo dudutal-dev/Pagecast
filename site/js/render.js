@@ -134,35 +134,6 @@ export function favorites(eps, st) {
   return `<div class="section-title"><h2>מועדפים</h2></div>${eps.length ? `<div class="grid">${eps.map((e) => card(e, st)).join("")}</div>` : `<div class="empty"><h3>עדיין אין מועדפים</h3><p>לחץ על הלב בעמוד הספר כדי לשמור אותו כאן.</p></div>`}`;
 }
 
-export function transcript(ep, activeIdx, clickable) {
-  if (ep.alignment && ep.alignment.length) {
-    // Group sentences into paragraphs by matching them back to the script's blank lines.
-    const paras = ep.script.split(/\n\s*\n/).map((p) => p.replace(/\s+/g, " ").trim());
-    let pi = 0,
-      consumed = "";
-    const groups = [];
-    let cur = [];
-    ep.alignment.forEach(([s, e, text], i) => {
-      cur.push(i);
-      consumed += (consumed ? " " : "") + text;
-      const target = paras[pi] || "";
-      if (consumed.length >= target.length - 2 && pi < paras.length - 1) {
-        groups.push(cur);
-        cur = [];
-        consumed = "";
-        pi++;
-      }
-    });
-    if (cur.length) groups.push(cur);
-    return `<div class="transcript-note">${clickable ? "לחיצה על משפט מדלגת אליו. " : ""}המשפט המושמע מודגש.</div>
-    <div class="transcript" id="transcript">${groups.map((g) => `<p>${g.map((i) => `<span class="s ${clickable ? "click" : ""} ${i === activeIdx ? "on" : ""}" data-i="${i}" data-t="${ep.alignment[i][0]}">${esc(ep.alignment[i][2])}</span> `).join("")}</p>`).join("")}</div>`;
-  }
-  return `<div class="transcript">${ep.script
-    .split(/\n\s*\n/)
-    .map((p) => `<p>${esc(p)}</p>`)
-    .join("")}</div>`;
-}
-
 export function book(ep, st, ps, tab, mode = "narration") {
   const fav = st.favorites.includes(ep.slug);
   const hasDialogue = !!ep.dialogue;
@@ -190,7 +161,6 @@ export function book(ep, st, ps, tab, mode = "narration") {
     : "";
   const tabs = [
     ["summary", "תקציר"],
-    ["script", "תסריט"],
     ["takeaways", ep.kind === "fiction" ? "למחשבה" : "לקחת הביתה"],
     ["notes", "הערות שלי"],
   ];
@@ -199,8 +169,6 @@ export function book(ep, st, ps, tab, mode = "narration") {
     body = `<div class="prose">${markdownToHtml(ep.summaryMd)}</div>
       ${ep.knowledgeToday ? `<div class="aside gold"><div class="k">מצב הידע היום</div><p>${esc(ep.knowledgeToday)}</p></div>` : ""}
       ${ep.caveat ? `<div class="aside"><div class="k">הסתייגות</div><p>${esc(ep.caveat)}</p></div>` : ""}`;
-  } else if (tab === "script") {
-    body = transcript(ep, isCur ? ps.activeIdx : -1, !!ep.audio);
   } else if (tab === "takeaways") {
     const ticks = st.ticks[ep.slug] || [];
     body = `<div class="transcript-note">${ep.kind === "fiction" ? "שלוש שאלות למחשבה." : "שלושה צעדים לשבוע הקרוב. סמן מה עשית."}</div>

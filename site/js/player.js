@@ -14,7 +14,6 @@ const state = {
   rate: store.get().settings.rate || 1,
   time: 0,
   duration: 0,
-  activeIdx: -1,
   error: null,
 };
 
@@ -41,21 +40,6 @@ export const fmt = (s) => {
   return `${m}:${String(r).padStart(2, "0")}`;
 };
 
-function findActive(alignment, t) {
-  if (!alignment) return -1;
-  let lo = 0,
-    hi = alignment.length - 1,
-    ans = -1;
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1;
-    if (alignment[mid][0] <= t) {
-      ans = mid;
-      lo = mid + 1;
-    } else hi = mid - 1;
-  }
-  return ans;
-}
-
 /** Progress is kept per track, so the narration and the conversation do not overwrite each other. */
 export function progressKey(slug, variant) {
   return variant === "dialogue" ? `${slug}#dialogue` : slug;
@@ -75,9 +59,6 @@ function saveProgress(force = false) {
 
 audio.addEventListener("timeupdate", () => {
   state.time = audio.currentTime;
-  const idx =
-    state.variant === "narration" ? findActive(state.ep?.alignment, state.time) : -1;
-  if (idx !== state.activeIdx) state.activeIdx = idx;
   saveProgress();
   emit();
 });
@@ -157,7 +138,6 @@ export function load(
     state.ep = ep;
     state.variant = variant;
     state.duration = (variant === "dialogue" ? track.durationSec : ep.durationSec) || 0;
-    state.activeIdx = -1;
     const saved = store.get().progress[progressKey(ep.slug, variant)];
     const start =
       from != null

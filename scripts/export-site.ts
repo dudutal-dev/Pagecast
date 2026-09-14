@@ -1,6 +1,6 @@
 /*
  * Exports the produced library into the static app under site/:
- *   site/data/episodes.json      all episodes (text, alignment, durations)
+ *   site/data/episodes.json      all episodes (summary text, durations)
  *   site/data/precache.json      files the service worker pre-caches
  *   site/audio/<slug>.mp3        narration
  *   site/assets/illustrations/<slug>.svg   original book plates
@@ -17,7 +17,6 @@ import { getDb, AUDIO_DIR } from "../src/server/db/client";
 import { audioAssets, episodes } from "../src/server/db/schema";
 import { DOMAIN_LABELS } from "../src/lib/domains";
 import { buildEmblem, buildPlate } from "../src/lib/svg/plate";
-import { stripExpressionTags } from "../src/lib/narration/sentences";
 
 const SITE = path.resolve("site");
 // --audio-only a,b,c : ship audio only for these slugs (others export as text-only)
@@ -112,10 +111,6 @@ async function main() {
         totalSec += asset.durationSec;
       }
     }
-    const displayScript = stripExpressionTags(ep.performedScript ?? ep.script)
-      .replace(/[ \t]+\n/g, "\n")
-      .replace(/ {2,}/g, " ")
-      .trim();
     out.push({
       slug,
       title: ep.title,
@@ -128,7 +123,6 @@ async function main() {
       kind: ep.kind,
       message: ep.message,
       summaryMd: ep.summaryMd,
-      script: displayScript,
       takeaways: ep.takeaways,
       caveat: ep.caveat,
       knowledgeToday: ep.knowledgeToday,
@@ -137,8 +131,6 @@ async function main() {
       dialogue,
       durationSec,
       sizeBytes,
-      alignment:
-        asset?.alignment?.map((s) => [round(s.start), round(s.end), s.text]) ?? null,
       createdAt: ep.createdAt,
     });
   }
@@ -202,8 +194,6 @@ async function main() {
     `exported ${out.length} episodes (${withAudio} with audio, ${Math.round(totalSec / 60)} min total) → site/  version ${VERSION}`,
   );
 }
-
-const round = (n: number) => Math.round(n * 100) / 100;
 
 main().catch((e) => {
   console.error(e);
