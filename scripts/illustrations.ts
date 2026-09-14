@@ -83,6 +83,18 @@ const MOTIFS: Record<string, string> = {
     "a wooden ferry oar leaning against a post at a river bank at dusk, a lotus flower drifting in the current, the far shore faint in mist",
   "mindset-dweck":
     "a bare seed and a young sapling side by side under one arched trellis, their roots meeting in the soil beneath",
+  "guns-germs-and-steel":
+    "an ear of wheat, a plough and a horseshoe arranged on an unrolled antique map whose lines run east to west, a compass rose in one corner",
+  "silk-roads-frankopan":
+    "a laden camel in silhouette on a caravan route between two distant walled cities, a length of unrolled silk trailing behind it like a road",
+  "tao-te-ching":
+    "a stream flowing around a large smooth boulder and closing again behind it, one bamboo stem bending over the water, an empty bowl on the bank",
+  "zen-mind-beginners-mind":
+    "an empty round meditation cushion on bare wooden boards, a single open window casting one rectangle of light across the floor",
+  "beyond-good-and-evil":
+    "an antique brass balance scale with both pans empty, a thin cracked mask resting on the ground beside it, a long shadow behind",
+  "genealogy-of-morality":
+    "a lantern held low over a deep archaeological trench, layers of earth visible in the wall, a small broken clay tablet part-uncovered at the bottom",
 };
 
 const EMBLEM =
