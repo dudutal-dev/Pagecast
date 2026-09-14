@@ -43,7 +43,7 @@ export function minutes(sec) {
 
 /** A closed book seen at a slight angle: cover art, spine, page block. */
 export function book3d(ep, { badge = "", progress = "", lazy = true } = {}) {
-  return `<span class="book3d">
+  return `<span class="book3d" data-domain="${ep.domain}">
     <span class="b-pages"></span>
     <span class="b-face"><img src="${ep.illustration}" alt=""${lazy ? ' loading="lazy"' : ""}><span class="b-gloss"></span>${badge}${progress}</span>
     <span class="b-spine"><span class="b-spine-title">${esc(ep.title)}</span></span>
@@ -68,7 +68,7 @@ export function card(ep, st) {
     ${book3d(ep, { badge, progress })}
     <span class="card-title">${esc(ep.title)}</span>
     <span class="card-author">${esc(ep.author)}</span>
-    <span class="card-meta">${ep.durationSec ? minutes(ep.durationSec) : "לקריאה"}${ep.dialogue ? `<i class="dot"></i><span class="has-chat">שיחה</span>` : ""}</span>
+    <span class="card-meta">${ep.durationSec ? minutes(ep.durationSec) : "לקריאה"}${ep.dialogue ? `<i class="dot"></i><span class="has-chat">פודקאסט</span>` : ""}</span>
   </a>`;
 }
 
@@ -92,7 +92,7 @@ export function home(eps, st, stats) {
       <p class="cover-lede">לכל ספר כאן יש תקציר עומק במילים שלנו, קריינות בעברית של חמש עד שמונה דקות, ואיור מקורי. הכול נמצא בתוך האפליקציה ועובד גם בלי אינטרנט.</p>
       <ul class="howto">
         <li><b>ספרייה</b> כל הספרים, עם סינון לפי תחום בראש המסך.</li>
-        <li><b>הקראה או שיחה</b> ${withChat === 1 ? "בספר אחד" : withChat ? `ב-${withChat} ספרים` : "בחלק מהספרים"} אפשר לבחור בעמוד הספר בין קריינות רצופה לבין שיחה בין מראיין לאורחת שקראה אותו.</li>
+        <li><b>הקראה או פודקאסט</b> ${withChat === 1 ? "בספר אחד" : withChat ? `ב-${withChat} ספרים` : "בחלק מהספרים"} אפשר לבחור בעמוד הספר בין קריינות רצופה לבין פודקאסט שבו מראיין משוחח עם אורחת שקראה את הספר.</li>
         <li><b>מסלול</b> רשימת האזנה שאתה בונה: בעמוד הספר לוחצים ＋, בוחרים מסלול, ואז משמיעים את כל הספרים שבו אחד אחרי השני.</li>
         <li><b>נשמר במכשיר</b> המקום שבו עצרת, המועדפים, ההערות והמסלולים נשארים אצלך ולא נשלחים לשום מקום.</li>
       </ul>
@@ -146,17 +146,17 @@ export function book(ep, st, ps, tab, mode = "narration") {
   const resume = p && !done && p.pos > 5 && p.pos < (dur || 0) - 5;
   const playLabel = !src
     ? active === "dialogue"
-      ? "השיחה בהכנה"
+      ? "הפודקאסט בהכנה"
       : "הקריינות בהכנה"
     : isCur && ps.playing
       ? "מנגן…"
       : resume
         ? `המשך · ${fmt(dur - p.pos)} נותרו`
-        : `${active === "dialogue" ? "האזן לשיחה" : "השמע"} · ${minutes(dur)}`;
+        : `${active === "dialogue" ? "האזן לפודקאסט" : "השמע"} · ${minutes(dur)}`;
   const modeSwitch = hasDialogue
     ? `<div class="mode-switch" role="radiogroup" aria-label="פורמט האזנה">
         <button role="radio" aria-checked="${active === "narration"}" class="${active === "narration" ? "on" : ""}" data-mode="narration">${ICONS.book} הקראה</button>
-        <button role="radio" aria-checked="${active === "dialogue"}" class="${active === "dialogue" ? "on" : ""}" data-mode="dialogue">${ICONS.chat} שיחה</button>
+        <button role="radio" aria-checked="${active === "dialogue"}" class="${active === "dialogue" ? "on" : ""}" data-mode="dialogue">${ICONS.chat} פודקאסט</button>
       </div>`
     : "";
   const tabs = [
@@ -187,7 +187,7 @@ export function book(ep, st, ps, tab, mode = "narration") {
         <div class="byline">${esc(ep.author)}${ep.year ? ` · ${ep.year}` : ""}${ep.kind === "fiction" ? " · ספרות" : ""}${ep.durationSec ? ` · ${minutes(ep.durationSec)}` : ""}</div>
         <blockquote class="message">${esc(ep.message)}</blockquote>
         ${modeSwitch}
-        ${active === "dialogue" ? `<p class="mode-note">שיחה על הספר בין המראיין לאורחת שקראה אותו, כולל ויכוח. אותם כללי דיוק כמו בהקראה.</p>` : ""}
+        ${active === "dialogue" ? `<p class="mode-note">פודקאסט על הספר: המראיין הקבוע ואורחת שקראה אותו, כולל ויכוח. אותם כללי דיוק כמו בהקראה.</p>` : ""}
         <div class="book-actions">
           <button class="btn primary" id="btn-play" ${src ? "" : "disabled"}>${isCur && ps.playing ? ICONS.pause : ICONS.play} ${playLabel}</button>
           <button class="icon-btn ${fav ? "on" : ""}" id="btn-fav" aria-label="${fav ? "הסר ממועדפים" : "הוסף למועדפים"}" aria-pressed="${fav}">${ICONS.heart}</button>

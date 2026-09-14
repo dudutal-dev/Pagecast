@@ -146,6 +146,22 @@ function render() {
   window.scrollTo({ top: navigated ? 0 : keptScroll, behavior: "instant" });
 }
 
+/**
+ * Re-renders while keeping one element pinned where it sits on screen.
+ * Switching the listening format or the tab changes how much markup sits above
+ * the play button, so restoring the raw scroll offset is not enough: the
+ * control the reader just pressed would still slide away under their thumb.
+ */
+function renderAnchored(selector) {
+  const before = document.querySelector(selector)?.getBoundingClientRect().top;
+  render();
+  if (before == null) return;
+  const after = document.querySelector(selector)?.getBoundingClientRect().top;
+  if (after != null && after !== before) {
+    window.scrollBy({ top: after - before, behavior: "instant" });
+  }
+}
+
 function filtered() {
   const st = store.get();
   let eps = DATA.episodes.slice();
@@ -199,7 +215,7 @@ function wireBook(ep) {
   main.querySelectorAll("[data-mode]").forEach((b) =>
     b.addEventListener("click", () => {
       bookMode = b.dataset.mode;
-      render();
+      renderAnchored(".mode-switch");
     }),
   );
   document.getElementById("btn-play")?.addEventListener("click", () => {
@@ -254,7 +270,7 @@ function wireBook(ep) {
   main.querySelectorAll("[data-tab]").forEach((b) =>
     b.addEventListener("click", () => {
       bookTab = b.dataset.tab;
-      render();
+      renderAnchored(".tabs");
     }),
   );
   main.querySelectorAll("[data-tick]").forEach((b) =>

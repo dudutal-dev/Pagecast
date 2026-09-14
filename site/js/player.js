@@ -97,7 +97,7 @@ function mediaSession() {
   if (!("mediaSession" in navigator) || !state.ep) return;
   const ep = state.ep;
   navigator.mediaSession.metadata = new MediaMetadata({
-    title: state.variant === "dialogue" ? `${ep.title} · שיחה` : ep.title,
+    title: state.variant === "dialogue" ? `${ep.title} · פודקאסט` : ep.title,
     artist: ep.author,
     album: "PAGECAST",
     artwork: [

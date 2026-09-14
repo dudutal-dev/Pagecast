@@ -736,12 +736,76 @@ h4 {
   position: relative;
   display: block;
   aspect-ratio: 41 / 60;
+  /* Smaller than its column, so a shelf of three has air around it. */
+  width: 86%;
+  max-width: 132px;
   /* Physical sides on purpose: a Hebrew book is bound on the right. */
   margin: 0 9px 0 6px;
   transform: perspective(900px) rotateY(7deg);
   transform-origin: 100% 50%;
   transition: transform 0.35s ease;
   will-change: transform;
+  /* Binding cloth; each domain overrides it below. */
+  --cloth: #8a7f6a;
+  --cloth-2: #d9c9a0;
+}
+
+/* The binding takes the book's own domain colour. */
+.book3d[data-domain="personal"] {
+  --cloth: #7f9a6e;
+  --cloth-2: #e6b98a;
+}
+.book3d[data-domain="psychology"] {
+  --cloth: #8a7fb0;
+  --cloth-2: #e6b98a;
+}
+.book3d[data-domain="business"] {
+  --cloth: #5f8f8a;
+  --cloth-2: #d9c28a;
+}
+.book3d[data-domain="money"] {
+  --cloth: #6f9a7a;
+  --cloth-2: #d4af37;
+}
+.book3d[data-domain="productivity"] {
+  --cloth: #c98a4a;
+  --cloth-2: #7f8fb0;
+}
+.book3d[data-domain="relationships"] {
+  --cloth: #c98a8a;
+  --cloth-2: #e6c2a0;
+}
+.book3d[data-domain="parenting"] {
+  --cloth: #e6b98a;
+  --cloth-2: #8fb0a0;
+}
+.book3d[data-domain="health"] {
+  --cloth: #7fb0a0;
+  --cloth-2: #c9d9c0;
+}
+.book3d[data-domain="spirituality"] {
+  --cloth: #8f8fc0;
+  --cloth-2: #d9c9a0;
+}
+.book3d[data-domain="philosophy"] {
+  --cloth: #b09070;
+  --cloth-2: #c9a24a;
+}
+.book3d[data-domain="history"] {
+  --cloth: #a08a6a;
+  --cloth-2: #c9b090;
+}
+.book3d[data-domain="science"] {
+  --cloth: #6f9fb0;
+  --cloth-2: #c9d9e0;
+}
+.book3d[data-domain="biography"] {
+  --cloth: #b07070;
+  --cloth-2: #d9c9b0;
+}
+.book3d[data-domain="fiction"] {
+  --cloth: #7f9a6e;
+  --cloth-2: #c9a24a;
 }
 .card:hover .book3d,
 .card:focus-visible .book3d {
@@ -752,7 +816,7 @@ h4 {
   inset: 0;
   overflow: hidden;
   background: var(--plate-bg);
-  border: 1px solid var(--gold-dim);
+  border: 1px solid color-mix(in srgb, var(--cloth) 55%, transparent);
   border-radius: 5px 2px 2px 5px;
   box-shadow:
     0 10px 18px -8px rgba(0, 0, 0, 0.75),
@@ -772,6 +836,12 @@ h4 {
   background:
     linear-gradient(
       to left,
+      color-mix(in srgb, var(--cloth) 72%, transparent) 0,
+      color-mix(in srgb, var(--cloth) 40%, transparent) 7%,
+      rgba(0, 0, 0, 0) 13%
+    ),
+    linear-gradient(
+      to left,
       rgba(0, 0, 0, 0.5) 0,
       rgba(0, 0, 0, 0.18) 6%,
       rgba(0, 0, 0, 0) 16%
@@ -781,7 +851,16 @@ h4 {
       rgba(255, 255, 255, 0.14) 0,
       rgba(255, 255, 255, 0) 42%,
       rgba(0, 0, 0, 0.22) 100%
-    );
+    ),
+    /* A wash of the domain colour over the engraving, so a shelf reads as
+       many coloured bindings rather than a row of black rectangles. */
+    linear-gradient(
+        150deg,
+        color-mix(in srgb, var(--cloth-2) 26%, transparent) 0,
+        color-mix(in srgb, var(--cloth) 30%, transparent) 55%,
+        color-mix(in srgb, var(--cloth) 14%, transparent) 100%
+      );
+  mix-blend-mode: normal;
 }
 /* The spine, standing slightly proud on the binding side (right in RTL). */
 .b-spine {
@@ -793,12 +872,12 @@ h4 {
   border-radius: 0 3px 3px 0;
   background: linear-gradient(
     to left,
-    #0a0908 0,
-    #1b1814 38%,
-    #2a251d 62%,
-    rgba(201, 169, 97, 0.35) 100%
+    color-mix(in srgb, var(--cloth) 34%, #07070a) 0,
+    color-mix(in srgb, var(--cloth) 58%, #0d0d11) 38%,
+    color-mix(in srgb, var(--cloth) 82%, #14141a) 68%,
+    var(--cloth-2) 100%
   );
-  box-shadow: inset 0 0 0 1px rgba(201, 169, 97, 0.22);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cloth-2) 40%, transparent);
   overflow: hidden;
 }
 .b-spine-title {
@@ -845,24 +924,27 @@ h4 {
   border-radius: 50%;
   background: var(--muted);
 }
+/* The badge sits on the cover artwork, which is dark in both themes, so it
+   keeps its own dark colours rather than following the palette. */
 .badge {
   position: absolute;
-  top: 6px;
-  inset-inline-start: 6px;
-  font-size: 9.5px;
-  padding: 2px 6px;
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  color: var(--gold-2);
-  border: 1px solid var(--gold-dim);
-  letter-spacing: 0.06em;
-  backdrop-filter: blur(4px);
+  top: 5px;
+  inset-inline-start: 5px;
+  font-size: 9px;
+  padding: 1px 5px;
+  background: rgba(10, 9, 8, 0.62);
+  color: #e8cd91;
+  border: 1px solid rgba(232, 205, 145, 0.3);
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(3px);
 }
 .badge.done {
-  color: var(--green);
-  border-color: rgba(127, 166, 139, 0.5);
+  color: #a7cdb4;
+  border-color: rgba(167, 205, 180, 0.35);
 }
 .badge.text {
-  color: var(--muted);
+  color: #bdb4a4;
+  border-color: rgba(189, 180, 164, 0.28);
 }
 .progress-line {
   position: absolute;
