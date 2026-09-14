@@ -36,6 +36,7 @@ export const ICONS = {
   back15: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>',
   fwd30: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>',
   book: '<svg viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>',
+  chat: '<svg viewBox="0 0 24 24"><path d="M20 13a7 7 0 0 1-7 7H8l-4 3v-4a7 7 0 0 1 1-13h8a7 7 0 0 1 7 7z"/><path d="M9 11h6M9 15h3"/></svg>',
 };
 
 export function minutes(sec) {
@@ -57,7 +58,7 @@ export function card(ep, st) {
     <span class="tile-img"><img src="${ep.illustration}" alt="" loading="lazy">${badge}${pct > 0 && !p?.done ? `<span class="progress-line"><i style="width:${pct}%"></i></span>` : ""}</span>
     <span class="card-title">${esc(ep.title)}</span>
     <span class="card-author">${esc(ep.author)}</span>
-    <span class="card-meta">${esc(ep.domainLabel)}${ep.durationSec ? `<i class="dot"></i>${minutes(ep.durationSec)}` : ""}</span>
+    <span class="card-meta">${esc(ep.domainLabel)}${ep.durationSec ? `<i class="dot"></i>${minutes(ep.durationSec)}` : ""}${ep.dialogue ? `<i class="dot"></i><span class="has-chat">שיחה</span>` : ""}</span>
   </a>`;
 }
 
@@ -144,19 +145,31 @@ export function transcript(ep, activeIdx, clickable) {
     .join("")}</div>`;
 }
 
-export function book(ep, st, ps, tab) {
+export function book(ep, st, ps, tab, mode = "narration") {
   const fav = st.favorites.includes(ep.slug);
-  const p = st.progress[ep.slug];
+  const hasDialogue = !!ep.dialogue;
+  const active = mode === "dialogue" && hasDialogue ? "dialogue" : "narration";
+  const src = active === "dialogue" ? ep.dialogue.audio : ep.audio;
+  const dur = active === "dialogue" ? ep.dialogue.durationSec : ep.durationSec;
+  const p = st.progress[active === "dialogue" ? `${ep.slug}#dialogue` : ep.slug];
   const done = !!p?.done;
-  const isCur = ps.ep && ps.ep.slug === ep.slug;
-  const resume = p && !done && p.pos > 5 && p.pos < (ep.durationSec || 0) - 5;
-  const playLabel = !ep.audio
-    ? "הקריינות בהכנה"
+  const isCur = ps.ep && ps.ep.slug === ep.slug && ps.variant === active;
+  const resume = p && !done && p.pos > 5 && p.pos < (dur || 0) - 5;
+  const playLabel = !src
+    ? active === "dialogue"
+      ? "השיחה בהכנה"
+      : "הקריינות בהכנה"
     : isCur && ps.playing
       ? "מנגן…"
       : resume
-        ? `המשך · ${fmt(ep.durationSec - p.pos)} נותרו`
-        : `השמע · ${minutes(ep.durationSec)}`;
+        ? `המשך · ${fmt(dur - p.pos)} נותרו`
+        : `${active === "dialogue" ? "האזן לשיחה" : "השמע"} · ${minutes(dur)}`;
+  const modeSwitch = hasDialogue
+    ? `<div class="mode-switch" role="radiogroup" aria-label="פורמט האזנה">
+        <button role="radio" aria-checked="${active === "narration"}" class="${active === "narration" ? "on" : ""}" data-mode="narration">${ICONS.book} הקראה</button>
+        <button role="radio" aria-checked="${active === "dialogue"}" class="${active === "dialogue" ? "on" : ""}" data-mode="dialogue">${ICONS.chat} שיחה</button>
+      </div>`
+    : "";
   const tabs = [
     ["summary", "תקציר"],
     ["script", "תסריט"],
@@ -187,12 +200,14 @@ export function book(ep, st, ps, tab) {
         ${ep.titleEn ? `<span class="en-title">${esc(ep.titleEn)}</span>` : ""}
         <div class="byline">${esc(ep.author)}${ep.year ? ` · ${ep.year}` : ""}${ep.kind === "fiction" ? " · ספרות" : ""}${ep.durationSec ? ` · ${minutes(ep.durationSec)}` : ""}</div>
         <blockquote class="message">${esc(ep.message)}</blockquote>
+        ${modeSwitch}
+        ${active === "dialogue" ? `<p class="mode-note">שיחה על הספר בין המראיין לאורחת שקראה אותו, כולל ויכוח. אותם כללי דיוק כמו בהקראה.</p>` : ""}
         <div class="book-actions">
-          <button class="btn primary" id="btn-play" ${ep.audio ? "" : "disabled"}>${isCur && ps.playing ? ICONS.pause : ICONS.play} ${playLabel}</button>
+          <button class="btn primary" id="btn-play" ${src ? "" : "disabled"}>${isCur && ps.playing ? ICONS.pause : ICONS.play} ${playLabel}</button>
           <button class="icon-btn ${fav ? "on" : ""}" id="btn-fav" aria-label="${fav ? "הסר ממועדפים" : "הוסף למועדפים"}" aria-pressed="${fav}">${ICONS.heart}</button>
           <button class="icon-btn ${done ? "on" : ""}" id="btn-done" aria-label="${done ? "סמן כלא הושמע" : "סמן כהושמע"}" aria-pressed="${done}">${ICONS.check}</button>
           <button class="icon-btn" id="btn-share" aria-label="שתף">${ICONS.share}</button>
-          ${ep.audio ? `<button class="icon-btn" id="btn-offline" aria-label="שמור לאופליין" title="שמור לאופליין">${ICONS.download}</button>` : ""}
+          ${src ? `<button class="icon-btn" id="btn-offline" aria-label="שמור לאופליין" title="שמור לאופליין">${ICONS.download}</button>` : ""}
           <button class="icon-btn" id="btn-path" aria-label="הוסף למסלול" title="הוסף למסלול">${ICONS.plus}</button>
         </div>
       </div>

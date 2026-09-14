@@ -11,6 +11,7 @@ let bySlug = {};
 let route = { name: "home" };
 let libQuery = { domain: "", sort: "newest", q: "" };
 let bookTab = "summary";
+let bookMode = "narration"; // "narration" | "dialogue"
 let userScrolledAt = 0;
 
 /* ---------- boot ---------- */
@@ -48,7 +49,10 @@ function parse() {
   const h = location.hash.replace(/^#\/?/, "");
   const [seg, arg] = h.split("/");
   if (!seg) return { name: "home" };
-  if (seg === "book" && arg && bySlug[arg]) return { name: "book", slug: arg };
+  if (seg === "book" && arg && bySlug[arg]) {
+    if (route.name !== "book" || route.slug !== arg) bookMode = "narration";
+    return { name: "book", slug: arg };
+  }
   if (seg === "path" && arg) return { name: "path", id: arg };
   if (["library", "paths", "favorites", "settings", "about"].includes(seg))
     return { name: seg };
@@ -83,10 +87,13 @@ function render() {
         st,
       );
       break;
-    case "book":
-      main.innerHTML = R.book(bySlug[route.slug], st, ps, bookTab);
-      wireBook(bySlug[route.slug]);
+    case "book": {
+      const ep = bySlug[route.slug];
+      if (bookMode === "dialogue" && !ep.dialogue) bookMode = "narration";
+      main.innerHTML = R.book(ep, st, ps, bookTab, bookMode);
+      wireBook(ep);
       break;
+    }
     case "paths":
       main.innerHTML = R.paths(st, DATA.episodes);
       document.getElementById("btn-new-path")?.addEventListener("click", () => {
@@ -165,12 +172,19 @@ function persistLib() {
 /* ---------- book ---------- */
 function wireBook(ep) {
   const st = store.get();
+  const variant = bookMode === "dialogue" && ep.dialogue ? "dialogue" : "narration";
+  main.querySelectorAll("[data-mode]").forEach((b) =>
+    b.addEventListener("click", () => {
+      bookMode = b.dataset.mode;
+      render();
+    }),
+  );
   document.getElementById("btn-play")?.addEventListener("click", () => {
     const ps = player.current();
-    if (ps.ep && ps.ep.slug === ep.slug) player.toggle();
+    if (ps.ep && ps.ep.slug === ep.slug && ps.variant === variant) player.toggle();
     else {
       player.getAnalyser();
-      player.load(ep);
+      player.load(ep, { variant });
     }
   });
   document.getElementById("btn-fav")?.addEventListener("click", () => {
@@ -179,8 +193,9 @@ function wireBook(ep) {
     render();
   });
   document.getElementById("btn-done")?.addEventListener("click", () => {
-    const done = !store.get().progress[ep.slug]?.done;
-    store.markDone(ep.slug, done);
+    const key = variant === "dialogue" ? `${ep.slug}#dialogue` : ep.slug;
+    const done = !store.get().progress[key]?.done;
+    store.markDone(key, done);
     toast(done ? "סומן כהושמע" : "סומן כחדש");
     render();
   });
@@ -203,7 +218,7 @@ function wireBook(ep) {
     toast("שומר לאופליין…");
     try {
       const c = await caches.open("pagecast-audio");
-      await c.add(new Request(ep.audio));
+      await c.add(new Request(variant === "dialogue" ? ep.dialogue.audio : ep.audio));
       toast("הקריינות שמורה במכשיר");
       btn.classList.add("on");
     } catch {
@@ -272,21 +287,22 @@ function wireBook(ep) {
     s.addEventListener("click", () => {
       const t = Number(s.dataset.t);
       const ps = player.current();
-      if (ps.ep && ps.ep.slug === ep.slug) {
+      if (ps.ep && ps.ep.slug === ep.slug && ps.variant === "narration") {
         player.seek(t);
         player.play();
       } else {
         player.getAnalyser();
-        player.load(ep, { from: t });
+        player.load(ep, { from: t, variant: "narration" });
       }
     }),
   );
   // Offline indicator
   const off = document.getElementById("btn-offline");
-  if (off && ep.audio && "caches" in window) {
+  const activeSrc = variant === "dialogue" ? ep.dialogue?.audio : ep.audio;
+  if (off && activeSrc && "caches" in window) {
     caches
       .open("pagecast-audio")
-      .then((c) => c.match(new Request(ep.audio)))
+      .then((c) => c.match(new Request(activeSrc)))
       .then((hit) => hit && off.classList.add("on"));
   }
   void st;
@@ -530,7 +546,7 @@ function renderPlayer(ps) {
     playerEl.querySelector(".fill").style.width = `${pct}%`;
     playerEl.querySelector(".knob").style.insetInlineStart = `calc(${pct}% - 7px)`;
   });
-  if (route.name === "book" && ps.ep.slug === route.slug) {
+  if (route.name === "book" && ps.ep.slug === route.slug && ps.variant === bookMode) {
     const btn = document.getElementById("btn-play");
     if (btn)
       btn.innerHTML = `${ps.playing ? R.ICONS.pause : R.ICONS.play} ${ps.playing ? "מנגן…" : "המשך"}`;

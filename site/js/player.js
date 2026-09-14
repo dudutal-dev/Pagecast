@@ -8,6 +8,7 @@ const listeners = new Set();
 
 const state = {
   ep: null, // episode object
+  variant: "narration", // "narration" | "dialogue"
   queue: [], // slugs for continuous play
   playing: false,
   rate: store.get().settings.rate || 1,
@@ -55,21 +56,27 @@ function findActive(alignment, t) {
   return ans;
 }
 
+/** Progress is kept per track, so the narration and the conversation do not overwrite each other. */
+export function progressKey(slug, variant) {
+  return variant === "dialogue" ? `${slug}#dialogue` : slug;
+}
+
 function saveProgress(force = false) {
   if (!state.ep) return;
   const now = Date.now();
   if (!force && now - lastSave < 5000) return;
   lastSave = now;
   store.setProgress(
-    state.ep.slug,
+    progressKey(state.ep.slug, state.variant),
     audio.currentTime,
-    state.duration || state.ep.durationSec || 0,
+    state.duration || 0,
   );
 }
 
 audio.addEventListener("timeupdate", () => {
   state.time = audio.currentTime;
-  const idx = findActive(state.ep?.alignment, state.time);
+  const idx =
+    state.variant === "narration" ? findActive(state.ep?.alignment, state.time) : -1;
   if (idx !== state.activeIdx) state.activeIdx = idx;
   saveProgress();
   emit();
@@ -92,9 +99,9 @@ audio.addEventListener("ended", () => {
   state.playing = false;
   if (state.ep)
     store.setProgress(
-      state.ep.slug,
-      state.duration || state.ep.durationSec,
-      state.duration || state.ep.durationSec,
+      progressKey(state.ep.slug, state.variant),
+      state.duration,
+      state.duration,
     );
   emit();
   next();
@@ -109,7 +116,7 @@ function mediaSession() {
   if (!("mediaSession" in navigator) || !state.ep) return;
   const ep = state.ep;
   navigator.mediaSession.metadata = new MediaMetadata({
-    title: ep.title,
+    title: state.variant === "dialogue" ? `${ep.title} · שיחה` : ep.title,
     artist: ep.author,
     album: "PAGECAST",
     artwork: [
@@ -136,26 +143,29 @@ function mediaSession() {
   h("previoustrack", state.queue.length > 1 ? () => prev() : null);
 }
 
-export function load(ep, { autoplay = true, from = null, queue = null } = {}) {
-  if (!ep || !ep.audio) return false;
-  const same = state.ep && state.ep.slug === ep.slug;
+export function load(
+  ep,
+  { autoplay = true, from = null, queue = null, variant = "narration" } = {},
+) {
+  const track = variant === "dialogue" ? ep.dialogue : null;
+  const src = variant === "dialogue" ? track?.audio : ep.audio;
+  if (!ep || !src) return false;
+  const same = state.ep && state.ep.slug === ep.slug && state.variant === variant;
   if (queue) state.queue = queue;
   else if (!same) state.queue = [];
   if (!same) {
     state.ep = ep;
-    state.duration = ep.durationSec || 0;
+    state.variant = variant;
+    state.duration = (variant === "dialogue" ? track.durationSec : ep.durationSec) || 0;
     state.activeIdx = -1;
-    const saved = store.get().progress[ep.slug];
+    const saved = store.get().progress[progressKey(ep.slug, variant)];
     const start =
       from != null
         ? from
-        : saved &&
-            !saved.done &&
-            saved.pos > 5 &&
-            saved.pos < (ep.durationSec || Infinity) - 5
+        : saved && !saved.done && saved.pos > 5 && saved.pos < state.duration - 5
           ? saved.pos
           : 0;
-    audio.src = ep.audio;
+    audio.src = src;
     audio.load();
     audio.currentTime = start;
     state.time = start;
@@ -206,7 +216,7 @@ export function next() {
   const s = state.queue[i + 1];
   const ep = s && episodesBySlug(s);
   if (!ep || !ep.audio) return false;
-  load(ep, { autoplay: true, from: 0, queue: state.queue });
+  load(ep, { autoplay: true, from: 0, queue: state.queue, variant: state.variant });
   return true;
 }
 export function prev() {
@@ -215,7 +225,7 @@ export function prev() {
   const s = state.queue[i - 1];
   const ep = s && episodesBySlug(s);
   if (!ep || !ep.audio) return false;
-  load(ep, { autoplay: true, from: 0, queue: state.queue });
+  load(ep, { autoplay: true, from: 0, queue: state.queue, variant: state.variant });
   return true;
 }
 export function close() {

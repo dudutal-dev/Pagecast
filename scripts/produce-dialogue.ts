@@ -25,7 +25,13 @@ import type { VoiceModel } from "../src/lib/schemas/settings";
 const HOST_VOICE_ID = process.env.PAGECAST_HOST_VOICE_ID ?? "iP95p4xoKVk53GoZ742B"; // Chris — charming, down-to-earth
 const HOST_VOICE_NAME = process.env.PAGECAST_HOST_VOICE_NAME ?? "Chris";
 /** The API caps a request at 2,000 characters across all turns. */
-const MAX_REQUEST_CHARS = 1800;
+const MAX_REQUEST_CHARS = 1500;
+/** Many short turns in one request come back with turns dropped; keep groups small. */
+const MAX_TURNS_PER_REQUEST = 8;
+/** Hebrew dialogue runs slower than narration: pauses between speakers. */
+const CHARS_PER_SEC = 10.5;
+/** A take shorter than this fraction of the expected length lost turns. */
+const COMPLETE_RATIO = 0.75;
 
 interface Turn {
   speaker: "host" | "guest";
@@ -46,7 +52,10 @@ function groupTurns(turns: Turn[]): Turn[][] {
   let cur: Turn[] = [];
   let size = 0;
   for (const t of turns) {
-    if (cur.length && size + t.text.length > MAX_REQUEST_CHARS) {
+    if (
+      cur.length &&
+      (size + t.text.length > MAX_REQUEST_CHARS || cur.length >= MAX_TURNS_PER_REQUEST)
+    ) {
       groups.push(cur);
       cur = [];
       size = 0;
@@ -103,9 +112,15 @@ async function main() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "pagecast-dialogue-"));
   const parts: string[] = [];
   try {
-    for (const [i, group] of groups.entries()) {
+    // Queue, not a plain loop: a group the provider rendered short is split and requeued.
+    const queue: Turn[][] = [...groups];
+    let done = 0;
+    while (queue.length) {
+      const group = queue.shift()!;
+      const total = done + queue.length + 1;
+      const groupChars = group.reduce((a, t) => a + t.text.length, 0);
       process.stdout.write(
-        `▶ בקשה ${i + 1} מתוך ${groups.length} (${group.length} תורות) `,
+        `▶ בקשה ${done + 1} מתוך ${total} (${group.length} תורות, ${groupChars} תווים) `,
       );
       const res = await tts.synthesizeDialogue(
         group.map((t) => ({
@@ -114,10 +129,19 @@ async function main() {
         })),
         { model, stability: settings.voiceSettings.stability, languageCode: "he" },
       );
-      const partPath = path.join(tmpDir, `part-${String(i).padStart(3, "0")}.mp3`);
+      const partPath = path.join(tmpDir, `part-${String(done).padStart(3, "0")}.mp3`);
       await fs.writeFile(partPath, res.audio);
-      parts.push(partPath);
       const sec = ffmpeg.available ? await probeDurationSec(partPath) : 0;
+      const ratio = ffmpeg.available ? sec / (groupChars / CHARS_PER_SEC) : 1;
+      if (ratio < COMPLETE_RATIO && group.length > 1) {
+        const mid = Math.ceil(group.length / 2);
+        queue.unshift(group.slice(0, mid), group.slice(mid));
+        await fs.rm(partPath, { force: true });
+        console.log(`✗ ${formatDuration(sec)} (${Math.round(ratio * 100)} אחוז) — מפצל`);
+        continue;
+      }
+      parts.push(partPath);
+      done++;
       console.log(`✓ ${formatDuration(sec)}`);
     }
     const stitched = path.join(tmpDir, "dialogue.mp3");
@@ -149,7 +173,7 @@ async function main() {
       "utf8",
     );
     // A dialogue that came back far shorter than the text implies was truncated.
-    const expected = chars / 11.7;
+    const expected = chars / CHARS_PER_SEC;
     const ratio = durationSec / expected;
     console.log(
       `\n✓ ${path.relative(process.cwd(), outPath)} — ${formatDuration(durationSec)}, ${(size / 1048576).toFixed(1)} MB` +

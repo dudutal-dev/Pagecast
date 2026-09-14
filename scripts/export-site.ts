@@ -72,6 +72,32 @@ async function main() {
     }
     precache.push(`./${plateRel}`);
 
+    // Conversation version, produced separately by scripts/produce-dialogue.ts
+    const dialogueMetaPath = path.resolve("content/dialogues", `${slug}.meta.json`);
+    const dialogueRel = `audio/${slug}.dialogue.mp3`;
+    let dialogue: {
+      audio: string;
+      durationSec: number;
+      sizeBytes: number;
+      turns: number;
+      hostVoiceName: string | null;
+    } | null = null;
+    if (fs.existsSync(dialogueMetaPath) && fs.existsSync(path.join(SITE, dialogueRel))) {
+      const meta = JSON.parse(fs.readFileSync(dialogueMetaPath, "utf8")) as {
+        durationSec: number;
+        sizeBytes: number;
+        turns: number;
+        hostVoiceName?: string;
+      };
+      dialogue = {
+        audio: dialogueRel,
+        durationSec: meta.durationSec,
+        sizeBytes: meta.sizeBytes,
+        turns: meta.turns,
+        hostVoiceName: meta.hostVoiceName ?? null,
+      };
+    }
+
     let audio: string | null = null;
     let durationSec: number | null = null;
     let sizeBytes = 0;
@@ -108,6 +134,7 @@ async function main() {
       knowledgeToday: ep.knowledgeToday,
       illustration: plateRel,
       audio,
+      dialogue,
       durationSec,
       sizeBytes,
       alignment:
@@ -118,9 +145,10 @@ async function main() {
 
   // Remove audio files that are no longer referenced (stale or held back).
   const keep = new Set(
-    (out as { audio: string | null }[])
-      .map((e) => e.audio && path.basename(e.audio))
-      .filter(Boolean),
+    (out as { audio: string | null; dialogue: { audio: string } | null }[])
+      .flatMap((e) => [e.audio, e.dialogue?.audio])
+      .filter((a): a is string => Boolean(a))
+      .map((a) => path.basename(a)),
   );
   for (const f of fs.readdirSync(path.join(SITE, "audio"))) {
     if (f.endsWith(".mp3") && !keep.has(f)) fs.rmSync(path.join(SITE, "audio", f));

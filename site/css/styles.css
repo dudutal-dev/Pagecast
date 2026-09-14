@@ -1389,3 +1389,50 @@ body {
 .running-head {
   direction: ltr;
 }
+
+/* ---------- Listening-format switch (narration / conversation) ---------- */
+.mode-switch {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  margin-top: 20px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.mode-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 0 16px;
+  font-size: 14.5px;
+  color: var(--ink-2);
+  transition: 0.2s;
+  font-family: var(--font-he);
+}
+.mode-switch button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mode-switch button:hover {
+  color: var(--gold);
+}
+.mode-switch button.on {
+  background: var(--gold);
+  color: #0f0e0c;
+}
+.mode-switch button.on svg {
+  stroke: #0f0e0c;
+}
+.mode-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.has-chat {
+  color: var(--ink-2);
+}

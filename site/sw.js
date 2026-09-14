@@ -2,7 +2,7 @@
    App shell + data + illustrations: cache-first (pre-cached on install).
    Audio: cache-first, filled on first play or via "שמור לאופליין".
    Fonts (Google): network-first with cache fallback. */
-const VERSION = "pagecast-202609140736";
+const VERSION = "pagecast-202609140831";
 const SHELL = [
   "./",
   "./index.html",
