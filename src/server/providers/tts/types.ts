@@ -42,6 +42,11 @@ export interface DialogueTurn {
 export interface TtsProvider {
   readonly name: "elevenlabs" | "fake";
   listVoices(): Promise<VoiceInfo[]>;
+  /**
+   * Characters left in the account's quota, `null` when the provider does not
+   * report one. Optional: a local or fake provider has no quota to report.
+   */
+  remainingCharacters?(): Promise<number | null>;
   synthesize(text: string, opts: SynthesizeOptions): Promise<SynthesizeResult>;
   /**
    * Multi-speaker take: the provider renders the whole exchange in one pass, so

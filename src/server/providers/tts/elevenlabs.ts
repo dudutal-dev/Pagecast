@@ -70,6 +70,28 @@ export class ElevenLabsProvider implements TtsProvider {
   }
 
   /**
+   * Characters left in this month's quota, or `null` when the account does not
+   * report one. Producing a long script that runs out halfway leaves a truncated
+   * MP3 and spends the quota anyway, so callers check this before they start.
+   */
+  async remainingCharacters(): Promise<number | null> {
+    try {
+      const res = await this.fetchWithRetry(`${BASE}/user/subscription`, {
+        headers: { "xi-api-key": this.key() },
+      });
+      const j = (await res.json()) as {
+        character_count?: number;
+        character_limit?: number;
+      };
+      if (typeof j.character_count !== "number" || typeof j.character_limit !== "number")
+        return null;
+      return Math.max(0, j.character_limit - j.character_count);
+    } catch {
+      return null; // never block production on a failed quota read
+    }
+  }
+
+  /**
    * Text-to-dialogue: the provider renders the whole exchange in one pass, so the
    * speakers react to each other. Capped by the API at 2,000 characters and 10
    * distinct voices per request.
