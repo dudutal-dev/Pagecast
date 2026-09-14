@@ -132,15 +132,20 @@ h4 {
 }
 
 /* ---------- Top bar ---------- */
+/* viewport-fit=cover lets the page run under the iPhone status bar and notch, so
+   the bar grows by the top inset and pads its content below it. Without this the
+   logo and buttons sit under the clock and the camera cut-out. */
 .topbar {
   position: sticky;
   top: 0;
   z-index: 50;
-  height: var(--topbar-h);
+  height: calc(var(--topbar-h) + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 0 clamp(16px, 4vw, 40px);
+  padding: env(safe-area-inset-top)
+    max(clamp(16px, 4vw, 40px), env(safe-area-inset-right)) 0
+    max(clamp(16px, 4vw, 40px), env(safe-area-inset-left));
   background: color-mix(in srgb, var(--bg) 82%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -300,7 +305,7 @@ h4 {
   z-index: 60;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(10px);
-  padding: calc(var(--topbar-h) + 12px) 16px 16px;
+  padding: calc(var(--topbar-h) + env(safe-area-inset-top) + 12px) 16px 16px;
   overflow: auto;
 }
 .search-panel {
@@ -1540,7 +1545,7 @@ h4 {
 /* ---------- Toast ---------- */
 .toast {
   position: fixed;
-  top: calc(var(--topbar-h) + 10px);
+  top: calc(var(--topbar-h) + env(safe-area-inset-top) + 10px);
   inset-inline: 0;
   margin: 0 auto;
   width: max-content;

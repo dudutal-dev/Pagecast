@@ -222,7 +222,6 @@ function wireBook(ep) {
     const ps = player.current();
     if (ps.ep && ps.ep.slug === ep.slug && ps.variant === variant) player.toggle();
     else {
-      player.getAnalyser();
       player.load(ep, { variant });
     }
   });
@@ -302,7 +301,6 @@ function wirePath(p) {
   document.getElementById("btn-play-path")?.addEventListener("click", () => {
     const q = p.slugs.filter((s) => bySlug[s]?.audio);
     if (!q.length) return;
-    player.getAnalyser();
     player.load(bySlug[q[0]], { from: 0, queue: q });
   });
   document.getElementById("btn-rename-path")?.addEventListener("click", () => {
@@ -505,7 +503,6 @@ function renderPlayer(ps) {
   }
   playerEl.innerHTML = R.playerBar(ps);
   document.getElementById("p-toggle").addEventListener("click", () => {
-    player.getAnalyser();
     player.toggle();
   });
   document.getElementById("p-back").addEventListener("click", () => player.skip(-15));
@@ -539,8 +536,6 @@ function drawWave(ps) {
   const canvas = document.getElementById("wave");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
-  const an = ps.playing ? player.getAnalyser() : null;
-  const data = an ? new Uint8Array(an.frequencyBinCount) : null;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let t = 0;
   const bars = 16;
@@ -555,14 +550,16 @@ function drawWave(ps) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     const gold = getComputedStyle(canvas).getPropertyValue("--gold").trim() || "#c9a24a";
-    if (an && data) an.getByteFrequencyData(data);
     const gap = 2,
       bw = (w - gap * (bars - 1)) / bars;
     for (let i = 0; i < bars; i++) {
-      let v;
-      if (an && data) v = (data[Math.floor((i / bars) * data.length * 0.6)] || 0) / 255;
-      else if (!ps.playing || reduce) v = 0.15 + 0.1 * Math.sin(i * 0.9);
-      else v = 0.25 + 0.2 * Math.sin(t / 9 + i * 0.7);
+      // A drawn motion rather than a real spectrum: reading the spectrum would
+      // mean routing the audio through an AudioContext, which stops playback
+      // when the app goes to the background.
+      const v =
+        !ps.playing || reduce
+          ? 0.15 + 0.1 * Math.sin(i * 0.9)
+          : 0.25 + 0.2 * Math.sin(t / 9 + i * 0.7);
       const bh = Math.max(2, v * h);
       ctx.fillStyle = gold;
       ctx.globalAlpha = 0.35 + v * 0.65;

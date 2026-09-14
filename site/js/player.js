@@ -17,10 +17,15 @@ const state = {
   error: null,
 };
 
+/*
+ * The audio element is deliberately NOT routed through the Web Audio API. A
+ * MediaElementAudioSourceNode makes the element's output depend on an
+ * AudioContext, and iOS suspends that context the moment the app goes to the
+ * background, which stops playback. Kept as a plain element, the system treats
+ * it as media: it keeps playing behind other apps and on the lock screen.
+ */
 let episodesBySlug = () => null;
 let lastSave = 0;
-let analyser = null;
-let ctx = null;
 
 export function bindCatalog(fn) {
   episodesBySlug = fn;
@@ -162,7 +167,6 @@ export function load(
 }
 export function play() {
   if (!state.ep) return;
-  ctx?.resume?.();
   audio.play().catch(() => {
     state.playing = false;
     emit();
@@ -221,25 +225,6 @@ export function close() {
 }
 export function current() {
   return state;
-}
-
-/** Waveform analyser (created on first user gesture). */
-export function getAnalyser() {
-  if (analyser) return analyser;
-  try {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    ctx = new AC();
-    const src = ctx.createMediaElementSource(audio);
-    analyser = ctx.createAnalyser();
-    analyser.fftSize = 64;
-    analyser.smoothingTimeConstant = 0.85;
-    src.connect(analyser);
-    analyser.connect(ctx.destination);
-    return analyser;
-  } catch {
-    return null;
-  }
 }
 
 window.addEventListener("pagehide", () => saveProgress(true));
