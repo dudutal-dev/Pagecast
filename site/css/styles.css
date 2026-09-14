@@ -676,15 +676,14 @@ h4 {
   font-size: 13.5px;
   min-height: 36px;
 }
+/* Three across is the floor, not an upgrade at 360px. A viewport media query
+   measures CSS pixels, so page zoom or a zoomed display setting drops a phone
+   below the breakpoint and the shelf falls back to two huge books. Fractional
+   columns keep the count fixed and let the books shrink instead. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px 14px;
-}
-@media (min-width: 360px) {
-  .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 12px;
 }
 @media (min-width: 620px) {
   .grid {
