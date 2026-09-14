@@ -1,0 +1,14 @@
+{
+  "slug": "educated-tara-westover",
+  "hash": "8c8c2a6ea7298db52872f2f2",
+  "durationSec": 350.600816,
+  "sizeBytes": 5610724,
+  "turns": 59,
+  "chars": 3959,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T15:34:52.548Z"
+}

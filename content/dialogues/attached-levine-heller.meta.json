@@ -1,0 +1,14 @@
+{
+  "slug": "attached-levine-heller",
+  "hash": "e59fc3a9706fa9b03d2c07c0",
+  "durationSec": 364.96,
+  "sizeBytes": 5840600,
+  "turns": 59,
+  "chars": 3980,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T15:31:30.276Z"
+}

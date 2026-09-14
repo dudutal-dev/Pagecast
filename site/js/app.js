@@ -397,7 +397,60 @@ function setTheme(t) {
   applyTheme(t);
   if (route.name === "settings") renderSettings();
 }
+/* ---------- version updates ---------- */
+/**
+ * Installed to the home screen, the app runs entirely from its own cache, so a
+ * new library can sit on the server for days without the reader seeing it. The
+ * button stays hidden until the published content version differs from the one
+ * this page loaded; pressing it drops the caches and reloads. The audio cache is
+ * kept, so narration already saved to the device is not downloaded twice.
+ */
+async function checkForUpdate() {
+  if (!DATA.version) return;
+  try {
+    const res = await fetch("data/episodes.json", { cache: "no-store" });
+    if (!res.ok) return;
+    const { version } = await res.json();
+    if (version && version !== DATA.version) {
+      document.getElementById("btn-update")?.removeAttribute("hidden");
+    }
+  } catch {
+    /* offline: nothing to update to */
+  }
+}
+
+async function applyUpdate(btn) {
+  btn.classList.add("working");
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.filter((k) => k !== "pagecast-audio").map((k) => caches.delete(k)),
+      );
+    }
+  } catch {
+    /* clearing is best effort; the reload still helps */
+  }
+  location.reload();
+}
+
 function wireChrome() {
+  const update = document.getElementById("btn-update");
+  update?.addEventListener("click", () => applyUpdate(update));
+  checkForUpdate();
+  // Re-check whenever the reader comes back to the app. On a phone that is the
+  // moment a home-screen app is reopened, which arrives as one of these three
+  // depending on the browser, so listen for all of them and let the version
+  // comparison decide whether anything actually changed.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") checkForUpdate();
+  });
+  window.addEventListener("focus", checkForUpdate);
+  window.addEventListener("pageshow", checkForUpdate);
   document
     .getElementById("btn-theme")
     .addEventListener("click", () =>

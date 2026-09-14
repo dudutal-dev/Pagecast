@@ -232,6 +232,29 @@ h4 {
   fill: var(--gold);
 }
 
+/* Update button: hidden until a new version is on the server, then a quiet
+   gold dot. Installed to the home screen, the app runs from its own cache and
+   would otherwise sit on an old library until the worker happened to refresh. */
+.icon-btn.has-update {
+  position: relative;
+  color: var(--gold);
+}
+.icon-btn.has-update::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  inset-inline-end: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.icon-btn.has-update.working {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 /* ---------- Bottom nav (mobile) ---------- */
 .bottomnav {
   display: none;

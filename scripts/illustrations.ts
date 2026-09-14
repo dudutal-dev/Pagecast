@@ -73,6 +73,16 @@ const MOTIFS: Record<string, string> = {
     "a lit torch being passed from one open hand to another against darkness, sparks rising from the flame",
   "master-and-his-emissary":
     "two birds perched on the same bare branch, one bending down to a single seed, the other lifting its head to scan a wide horizon",
+  "how-to-talk-so-kids-listen":
+    "a small paper boat and a large paper boat floating side by side on still water, a length of string loosely joining them, gentle ripples spreading outward",
+  "educated-tara-westover":
+    "a single open book resting on a weathered mountain boulder, a narrow footpath climbing behind it toward a distant ridge, one lit window far below in the valley",
+  "attached-levine-heller":
+    "two anchors resting on a seabed joined by one slack rope, small fish circling between them, light filtering down from the surface",
+  "siddhartha-hesse":
+    "a wooden ferry oar leaning against a post at a river bank at dusk, a lotus flower drifting in the current, the far shore faint in mist",
+  "mindset-dweck":
+    "a bare seed and a young sapling side by side under one arched trellis, their roots meeting in the soil beneath",
 };
 
 const EMBLEM =

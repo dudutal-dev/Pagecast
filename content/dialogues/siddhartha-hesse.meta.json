@@ -1,0 +1,14 @@
+{
+  "slug": "siddhartha-hesse",
+  "hash": "21e78a88e79ca4876b6f0072",
+  "durationSec": 373.190204,
+  "sizeBytes": 5972257,
+  "turns": 61,
+  "chars": 3966,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T17:28:51.325Z"
+}
