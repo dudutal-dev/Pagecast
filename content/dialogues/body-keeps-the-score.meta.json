@@ -1,0 +1,14 @@
+{
+  "slug": "body-keeps-the-score",
+  "hash": "a19c24b95b7268f77363fef4",
+  "durationSec": 357.376327,
+  "sizeBytes": 5718975,
+  "turns": 61,
+  "chars": 3846,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T12:58:16.294Z"
+}

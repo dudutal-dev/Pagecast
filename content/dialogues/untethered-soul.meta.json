@@ -1,0 +1,14 @@
+{
+  "slug": "untethered-soul",
+  "hash": "934dfe27a7603c1fd6c9bca0",
+  "durationSec": 367.136327,
+  "sizeBytes": 5875293,
+  "turns": 63,
+  "chars": 3917,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T14:02:35.489Z"
+}

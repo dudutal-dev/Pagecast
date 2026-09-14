@@ -1,0 +1,14 @@
+{
+  "slug": "incognito-eagleman",
+  "hash": "2de556ce4609d292cc6ec0fa",
+  "durationSec": 378.522449,
+  "sizeBytes": 6057522,
+  "turns": 61,
+  "chars": 3995,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:14:54.958Z"
+}

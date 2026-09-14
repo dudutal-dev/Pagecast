@@ -1,0 +1,14 @@
+{
+  "slug": "myth-of-sisyphus",
+  "hash": "472c6a9e5c7971c1b83a9ad5",
+  "durationSec": 373.988571,
+  "sizeBytes": 5984797,
+  "turns": 65,
+  "chars": 3995,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:28:24.816Z"
+}

@@ -1,0 +1,14 @@
+{
+  "slug": "flow-csikszentmihalyi",
+  "hash": "6c6ad61a77dc7a02935729c1",
+  "durationSec": 354.223673,
+  "sizeBytes": 5668818,
+  "turns": 65,
+  "chars": 3805,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:11:21.693Z"
+}

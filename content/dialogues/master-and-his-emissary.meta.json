@@ -1,0 +1,14 @@
+{
+  "slug": "master-and-his-emissary",
+  "hash": "07d6b3395f0f741245aec8b7",
+  "durationSec": 360.506122,
+  "sizeBytes": 5769130,
+  "turns": 63,
+  "chars": 3864,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:21:40.801Z"
+}

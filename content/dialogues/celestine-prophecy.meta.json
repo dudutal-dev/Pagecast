@@ -1,0 +1,14 @@
+{
+  "slug": "celestine-prophecy",
+  "hash": "a7c7d18dbe8399966ffd74b1",
+  "durationSec": 350.174694,
+  "sizeBytes": 5604035,
+  "turns": 63,
+  "chars": 3780,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:01:37.563Z"
+}

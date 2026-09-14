@@ -1,0 +1,14 @@
+{
+  "slug": "sapiens",
+  "hash": "f258dc1463bb5f878de28c1d",
+  "durationSec": 363.382857,
+  "sizeBytes": 5815105,
+  "turns": 59,
+  "chars": 3985,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:39:10.054Z"
+}

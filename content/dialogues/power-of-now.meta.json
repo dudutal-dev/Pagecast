@@ -1,0 +1,14 @@
+{
+  "slug": "power-of-now",
+  "hash": "32e1f978de6f4daaefda44be",
+  "durationSec": 372.097959,
+  "sizeBytes": 5954703,
+  "turns": 61,
+  "chars": 3992,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:31:41.462Z"
+}

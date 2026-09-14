@@ -1,0 +1,14 @@
+{
+  "slug": "doors-of-perception",
+  "hash": "8eed594a49c66b979de91a35",
+  "durationSec": 362.501224,
+  "sizeBytes": 5800894,
+  "turns": 63,
+  "chars": 3892,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:08:16.877Z"
+}

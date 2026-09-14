@@ -1,0 +1,14 @@
+{
+  "slug": "altered-traits",
+  "hash": "5fd1790787c7de061d4756c4",
+  "durationSec": 375.479184,
+  "sizeBytes": 6008621,
+  "turns": 61,
+  "chars": 3995,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T14:11:39.751Z"
+}

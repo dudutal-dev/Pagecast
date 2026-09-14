@@ -1,0 +1,14 @@
+{
+  "slug": "stealing-fire",
+  "hash": "c93abccca32f4adf33d3bf42",
+  "durationSec": 353.302857,
+  "sizeBytes": 5653772,
+  "turns": 63,
+  "chars": 3815,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:48:56.560Z"
+}

@@ -1,0 +1,14 @@
+{
+  "slug": "the-alchemist",
+  "hash": "ec9e86af6bf4660d38b23dac",
+  "durationSec": 363.577143,
+  "sizeBytes": 5818449,
+  "turns": 63,
+  "chars": 3879,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:52:31.159Z"
+}

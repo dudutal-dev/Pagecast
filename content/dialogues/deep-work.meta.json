@@ -1,0 +1,14 @@
+{
+  "slug": "deep-work",
+  "hash": "c1933ee2ee3958d409db3a71",
+  "durationSec": 351.529796,
+  "sizeBytes": 5625350,
+  "turns": 65,
+  "chars": 3814,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:04:57.836Z"
+}

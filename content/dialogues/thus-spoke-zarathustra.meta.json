@@ -1,0 +1,14 @@
+{
+  "slug": "thus-spoke-zarathustra",
+  "hash": "d4d3713aa80308ca0e2d51ab",
+  "durationSec": 370.050612,
+  "sizeBytes": 5921685,
+  "turns": 65,
+  "chars": 3925,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:59:04.925Z"
+}

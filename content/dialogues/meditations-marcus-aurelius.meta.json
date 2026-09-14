@@ -1,0 +1,14 @@
+{
+  "slug": "meditations-marcus-aurelius",
+  "hash": "46cb414a76893dab01a803d9",
+  "durationSec": 372.617143,
+  "sizeBytes": 5963062,
+  "turns": 65,
+  "chars": 3908,
+  "hostVoiceId": "iP95p4xoKVk53GoZ742B",
+  "hostVoiceName": "Chris",
+  "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
+  "guestVoiceName": "Jessica - Playful, Bright, Warm",
+  "model": "eleven_v3",
+  "createdAt": "2026-09-14T13:25:09.465Z"
+}
