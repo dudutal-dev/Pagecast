@@ -92,7 +92,13 @@ is rendered. Fixing a line afterwards means paying to re-record the whole episod
 ```bash
 npm run dialogue -- <slug>
 npm run dialogue -- <slug> --force
+npm run dialogue -- --all                  # every script with no current audio
+npm run dialogue -- --all --reserve 20000  # keep more of the quota back
 ```
 
 Writes `site/audio/<slug>.dialogue.mp3` and `content/dialogues/<slug>.meta.json`. The meta
 file carries a hash of the turns and the voices, so an unchanged script is skipped.
+
+Before each episode the script checks the account's remaining quota and refuses to start one
+it cannot finish, holding a reserve back. Episodes it declined are listed at the end and the
+run exits non-zero, so the rest can be produced after the quota renews.
