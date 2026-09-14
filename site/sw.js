@@ -1,8 +1,8 @@
 /* Pagecast — service worker.
    App shell + data + illustrations: cache-first (pre-cached on install).
-   Audio: cache-first, filled on first play or via "שמור לאופליין".
+   Audio: cache-first, filled automatically on first play.
    Fonts (Google): network-first with cache fallback. */
-const VERSION = "pagecast-202609140831";
+const VERSION = "pagecast-202609140944";
 const SHELL = [
   "./",
   "./index.html",

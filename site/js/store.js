@@ -7,7 +7,7 @@ const DEFAULT = {
   notes: {}, // slug -> text
   ticks: {}, // slug -> boolean[]
   paths: [], // { id, name, slugs: [] }
-  settings: { theme: "dark", rate: 1 },
+  settings: { theme: "light", rate: 1 },
 };
 
 function load() {

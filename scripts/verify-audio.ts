@@ -14,7 +14,16 @@ import { formatDuration } from "../src/lib/format";
 
 /** Hebrew narration measured on complete episodes: ~11.7 characters per second. */
 const CHARS_PER_SEC = 11.7;
-const MIN_RATIO = 0.85; // audio at least this fraction of the expected length
+/**
+ * The stored alignment is the authority on whether the whole script was spoken:
+ * it reports, character by character, what the provider actually voiced. The
+ * duration ratio only says how fast it was read, so a brisk but complete take
+ * is a warning, never a failure. The ratio decides on its own only when the
+ * episode has no alignment to consult.
+ */
+const MIN_ALIGN = 0.99;
+const WARN_RATIO = 0.85; // a complete take read this much faster than expected
+const MIN_RATIO = 0.7; // without alignment, below this the take lost text
 const MIN_SECONDS = 300; // every episode runs at least five minutes
 
 const db = getDb();
@@ -26,6 +35,7 @@ const rows = db
   .sort((a, b) => (a.slug ?? "").localeCompare(b.slug ?? ""));
 
 let bad = 0;
+let warned = 0;
 let withAudio = 0;
 console.log("slug".padEnd(30) + "משך    צפוי   יחס   טרנסקריפט  מצב");
 for (const ep of rows) {
@@ -57,22 +67,29 @@ for (const ep of rows) {
     else break;
   }
   const alignPct = al.length ? spoken / al.length : 1;
-  const complete = ratio >= MIN_RATIO && alignPct >= 0.99;
+  const complete = al.length ? alignPct >= MIN_ALIGN : ratio >= MIN_RATIO;
+  const brisk = complete && ratio < WARN_RATIO;
   const longEnough = asset.durationSec >= MIN_SECONDS;
   const ok = complete && longEnough;
   if (!ok) bad++;
+  if (brisk) warned++;
   console.log(
     (ep.slug ?? "").padEnd(30) +
       formatDuration(asset.durationSec).padEnd(7) +
       formatDuration(expected).padEnd(7) +
       `${(ratio * 100).toFixed(0)}%`.padEnd(6) +
       `${(alignPct * 100).toFixed(0)}%`.padEnd(11) +
-      (ok
-        ? "✓ שלם"
-        : !complete
-          ? `✗ נקטע אחרי «${al[spoken - 1]?.text.slice(0, 30) ?? "?"}»`
-          : "✗ קצר מחמש דקות — הארך את התסריט"),
+      (!complete
+        ? `✗ נקטע אחרי «${al[spoken - 1]?.text.slice(0, 30) ?? "?"}»`
+        : !longEnough
+          ? "✗ קצר מחמש דקות — הארך את התסריט"
+          : brisk
+            ? "✓ שלם (קריאה מהירה)"
+            : "✓ שלם"),
   );
 }
-console.log(`\n${withAudio} פרקים עם קריינות, ${bad} פגומים`);
+console.log(
+  `\n${withAudio} פרקים עם קריינות, ${bad} פגומים` +
+    (warned ? `, ${warned} שלמים אך נקראו מהר מהצפוי` : ""),
+);
 process.exit(bad ? 1 : 0);

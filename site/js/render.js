@@ -25,9 +25,6 @@ export const ICONS = {
   heart:
     '<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>',
   check: '<svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>',
-  share:
-    '<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>',
-  download: '<svg viewBox="0 0 24 24"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg>',
   plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   up: '<svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>',
   down: '<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>',
@@ -44,6 +41,15 @@ export function minutes(sec) {
   return `${Math.max(1, Math.round(sec / 60))} דק׳`;
 }
 
+/** A closed book seen at a slight angle: cover art, spine, page block. */
+export function book3d(ep, { badge = "", progress = "", lazy = true } = {}) {
+  return `<span class="book3d">
+    <span class="b-pages"></span>
+    <span class="b-face"><img src="${ep.illustration}" alt=""${lazy ? ' loading="lazy"' : ""}><span class="b-gloss"></span>${badge}${progress}</span>
+    <span class="b-spine"><span class="b-spine-title">${esc(ep.title)}</span></span>
+  </span>`;
+}
+
 export function card(ep, st) {
   const p = st.progress[ep.slug];
   const pct = p && ep.durationSec ? Math.min(100, (p.pos / ep.durationSec) * 100) : 0;
@@ -53,12 +59,16 @@ export function card(ep, st) {
       ? '<span class="badge done">הושמע</span>'
       : p && p.pos > 5
         ? '<span class="badge">באמצע</span>'
-        : '<span class="badge">חדש</span>';
+        : "";
+  const progress =
+    pct > 0 && !p?.done
+      ? `<span class="progress-line"><i style="width:${pct}%"></i></span>`
+      : "";
   return `<a class="card" href="#/book/${ep.slug}" aria-label="${esc(ep.title)}, ${esc(ep.author)}">
-    <span class="tile-img"><img src="${ep.illustration}" alt="" loading="lazy">${badge}${pct > 0 && !p?.done ? `<span class="progress-line"><i style="width:${pct}%"></i></span>` : ""}</span>
+    ${book3d(ep, { badge, progress })}
     <span class="card-title">${esc(ep.title)}</span>
     <span class="card-author">${esc(ep.author)}</span>
-    <span class="card-meta">${esc(ep.domainLabel)}${ep.durationSec ? `<i class="dot"></i>${minutes(ep.durationSec)}` : ""}${ep.dialogue ? `<i class="dot"></i><span class="has-chat">שיחה</span>` : ""}</span>
+    <span class="card-meta">${ep.durationSec ? minutes(ep.durationSec) : "לקריאה"}${ep.dialogue ? `<i class="dot"></i><span class="has-chat">שיחה</span>` : ""}</span>
   </a>`;
 }
 
@@ -73,16 +83,20 @@ export function home(eps, st, stats) {
     )
     .sort((a, b) => st.progress[b.slug].at - st.progress[a.slug].at)
     .slice(0, 3);
-  const featured = eps.slice(0, 3);
+  const withChat = eps.filter((e) => e.dialogue).length;
   return `<section class="cover">
     <div class="cover-inner">
       <div class="cover-ornament"><img src="assets/icons/icon-512.png" alt=""></div>
       <h1 class="brand-title">PAGECAST</h1>
-      <div class="en-title">Books, Narrated</div>
-      <div class="sub-title">פודקאסט הספרים: תקציר עם מסר לכל ספר, בקריינות עברית</div>
-      <div class="cover-tag">${stats.count} ספרים · ${stats.narrated} מוקראים · ${stats.minutes} דקות האזנה</div>
-      <div class="cover-tiles">${featured.map((e) => `<a class="tile" href="#/book/${e.slug}"><span class="tile-img"><img src="${e.illustration}" alt=""></span><span class="tile-name">${esc(e.title)}</span><span class="tile-sub">${esc(e.author)}</span></a>`).join("")}</div>
-      <div class="cover-actions"><a class="btn primary" href="#/library">${ICONS.book} לספרייה</a><a class="btn" href="#/paths">מסלולי האזנה</a></div>
+      <div class="cover-tag">${stats.count} ספרים · ${stats.narrated} בקריינות · ${stats.minutes} דקות האזנה</div>
+      <p class="cover-lede">לכל ספר כאן יש תקציר עומק במילים שלנו, קריינות בעברית של חמש עד שמונה דקות, ואיור מקורי. הכול נמצא בתוך האפליקציה ועובד גם בלי אינטרנט.</p>
+      <ul class="howto">
+        <li><b>ספרייה</b> כל הספרים, עם סינון לפי תחום בראש המסך.</li>
+        <li><b>הקראה או שיחה</b> ${withChat === 1 ? "בספר אחד" : withChat ? `ב-${withChat} ספרים` : "בחלק מהספרים"} אפשר לבחור בעמוד הספר בין קריינות רצופה לבין שיחה בין מראיין לאורחת שקראה אותו.</li>
+        <li><b>מסלול</b> רשימת האזנה שאתה בונה: בעמוד הספר לוחצים ＋, בוחרים מסלול, ואז משמיעים את כל הספרים שבו אחד אחרי השני.</li>
+        <li><b>נשמר במכשיר</b> המקום שבו עצרת, המועדפים, ההערות והמסלולים נשארים אצלך ולא נשלחים לשום מקום.</li>
+      </ul>
+      <div class="cover-actions"><a class="btn primary" href="#/library">${ICONS.book} לספרייה</a><a class="btn" href="#/paths">המסלולים שלי</a></div>
     </div>
   </section>
   ${cont.length ? `<div class="section-title"><h2>המשך האזנה</h2><a href="#/library">לכל הספרים</a></div><div class="grid">${cont.map((e) => card(e, st)).join("")}</div>` : ""}
@@ -95,17 +109,21 @@ export function home(eps, st, stats) {
     .join("")}</div>`;
 }
 
-export function library(eps, st, q) {
-  const chips = [["", "הכול"], ...DOMAINS]
+export function library(eps, st, q, all = eps) {
+  const counts = all.reduce((m, e) => ((m[e.domain] = (m[e.domain] || 0) + 1), m), {});
+  const chips = [
+    ["", `כל הספרים`, all.length],
+    ...DOMAINS.map(([id, l]) => [id, l, counts[id] || 0]),
+  ]
+    .filter(([, , n]) => n > 0)
     .map(
-      ([id, label]) =>
-        `<button class="chip ${q.domain === id ? "on" : ""}" data-domain="${id}">${label}</button>`,
+      ([id, label, n]) =>
+        `<button class="chip ${q.domain === id ? "on" : ""}" role="radio" aria-checked="${q.domain === id}" data-domain="${id}">${label}<i>${n}</i></button>`,
     )
     .join("");
-  return `<div class="section-title"><h2>הספרייה</h2><span class="muted small">${eps.length} ספרים</span></div>
-  <div class="toolbar">
+  return `<div class="toolbar">
     <div class="chips" role="radiogroup" aria-label="סינון לפי תחום">${chips}</div>
-    <div class="sortrow"><span>${q.status === "unplayed" ? "רק מה שלא הושמע" : ""}</span>
+    <div class="sortrow"><span>${eps.length} ספרים</span>
       <label>מיון <select id="sort"><option value="newest" ${q.sort === "newest" ? "selected" : ""}>נוסף לאחרונה</option><option value="title" ${q.sort === "title" ? "selected" : ""}>לפי כותר</option><option value="duration" ${q.sort === "duration" ? "selected" : ""}>לפי משך</option><option value="unplayed" ${q.sort === "unplayed" ? "selected" : ""}>לא הושמע קודם</option></select></label>
     </div>
   </div>
@@ -206,8 +224,6 @@ export function book(ep, st, ps, tab, mode = "narration") {
           <button class="btn primary" id="btn-play" ${src ? "" : "disabled"}>${isCur && ps.playing ? ICONS.pause : ICONS.play} ${playLabel}</button>
           <button class="icon-btn ${fav ? "on" : ""}" id="btn-fav" aria-label="${fav ? "הסר ממועדפים" : "הוסף למועדפים"}" aria-pressed="${fav}">${ICONS.heart}</button>
           <button class="icon-btn ${done ? "on" : ""}" id="btn-done" aria-label="${done ? "סמן כלא הושמע" : "סמן כהושמע"}" aria-pressed="${done}">${ICONS.check}</button>
-          <button class="icon-btn" id="btn-share" aria-label="שתף">${ICONS.share}</button>
-          ${src ? `<button class="icon-btn" id="btn-offline" aria-label="שמור לאופליין" title="שמור לאופליין">${ICONS.download}</button>` : ""}
           <button class="icon-btn" id="btn-path" aria-label="הוסף למסלול" title="הוסף למסלול">${ICONS.plus}</button>
         </div>
       </div>
@@ -251,9 +267,8 @@ export function path(p, st, eps) {
 export function settings(st, info) {
   return `<div class="section-title"><h2>הגדרות</h2></div>
   <div class="settings-grid">
-    <div class="setting"><h3>מראה</h3><p>כהה כברירת מחדל, כמו ספרייה בלילה.</p><div class="seg"><button data-theme="dark" class="${st.settings.theme === "dark" ? "on" : ""}">כהה</button><button data-theme="light" class="${st.settings.theme === "light" ? "on" : ""}">בהיר</button></div></div>
+    <div class="setting"><h3>מראה</h3><p>בהיר כברירת מחדל. כהה לקריאה בלילה.</p><div class="seg"><button data-theme="dark" class="${st.settings.theme === "dark" ? "on" : ""}">כהה</button><button data-theme="light" class="${st.settings.theme === "light" ? "on" : ""}">בהיר</button></div></div>
     <div class="setting"><h3>מהירות השמעה</h3><p>ברירת המחדל לפרקים חדשים.</p><div class="seg">${[0.8, 0.9, 1, 1.1, 1.25, 1.5].map((r) => `<button data-rate="${r}" class="${st.settings.rate === r ? "on" : ""}">${r}×</button>`).join("")}</div></div>
-    <div class="setting"><h3>אופליין</h3><p>הטקסטים והאיורים נשמרים אוטומטית. הקריינות נשמרת בהשמעה ראשונה, או כולה כאן.</p><div class="inline"><button class="btn" id="btn-download-all">${ICONS.download} שמור את כל הקריינות (${info.audioMb} MB)</button><span class="small muted" id="download-status">${info.cached} מתוך ${info.narrated} שמורים</span></div></div>
     <div class="setting"><h3>סטטיסטיקות</h3><div class="kv"><span>ספרים בספרייה</span><b>${info.count}</b></div><div class="kv"><span>עם קריינות</span><b>${info.narrated}</b></div><div class="kv"><span>הושמעו עד הסוף</span><b>${info.done}</b></div><div class="kv"><span>דקות האזנה משוערות</span><b>${info.listened}</b></div><div class="kv"><span>גרסת תוכן</span><b class="en" style="letter-spacing:.04em">${esc(info.version)}</b></div></div>
     <div class="setting"><h3>גיבוי ההתקדמות</h3><p>מועדפים, הערות, סימונים ומסלולים נשמרים רק במכשיר הזה.</p><div class="inline"><button class="btn" id="btn-export">ייצא</button><label class="btn">ייבא<input type="file" id="import-file" accept="application/json" hidden></label></div></div>
     <div class="setting"><h3>אזור סכנה</h3><p>מוחק את ההתקדמות, ההערות והמסלולים במכשיר הזה. הספרים נשארים.</p><button class="btn danger" id="btn-reset">אפס נתונים</button></div>

@@ -40,6 +40,18 @@ async function boot() {
   render();
   wireChrome();
   if ("serviceWorker" in navigator) {
+    // A new worker takes over as soon as it installs (skipWaiting + clients.claim),
+    // but this page is still running the old modules. Reload once so a returning
+    // reader sees the new library instead of a cached one.
+    // On the very first visit there is no previous controller, so claiming the
+    // page is not an update and must not trigger a reload.
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hadController || reloading) return;
+      reloading = true;
+      location.reload();
+    });
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
 }
@@ -78,7 +90,7 @@ function render() {
       break;
     }
     case "library":
-      main.innerHTML = R.library(filtered(), st, libQuery);
+      main.innerHTML = R.library(filtered(), st, libQuery, DATA.episodes);
       wireLibrary();
       break;
     case "favorites":
@@ -199,34 +211,6 @@ function wireBook(ep) {
     toast(done ? "סומן כהושמע" : "סומן כחדש");
     render();
   });
-  document.getElementById("btn-share")?.addEventListener("click", async () => {
-    const url = location.href;
-    const text = `${ep.title} · ${ep.author}\n\n${ep.message}`;
-    try {
-      if (navigator.share) await navigator.share({ title: ep.title, text, url });
-      else {
-        await navigator.clipboard.writeText(`${text}\n${url}`);
-        toast("הועתק ללוח");
-      }
-    } catch {
-      /* cancelled */
-    }
-  });
-  document.getElementById("btn-offline")?.addEventListener("click", async (e) => {
-    const btn = e.currentTarget;
-    btn.disabled = true;
-    toast("שומר לאופליין…");
-    try {
-      const c = await caches.open("pagecast-audio");
-      await c.add(new Request(variant === "dialogue" ? ep.dialogue.audio : ep.audio));
-      toast("הקריינות שמורה במכשיר");
-      btn.classList.add("on");
-    } catch {
-      toast("לא הצלחנו לשמור. בדוק חיבור.");
-    } finally {
-      btn.disabled = false;
-    }
-  });
   document.getElementById("btn-path")?.addEventListener("click", () => {
     const paths = store.get().paths;
     if (!paths.length) {
@@ -296,15 +280,6 @@ function wireBook(ep) {
       }
     }),
   );
-  // Offline indicator
-  const off = document.getElementById("btn-offline");
-  const activeSrc = variant === "dialogue" ? ep.dialogue?.audio : ep.audio;
-  if (off && activeSrc && "caches" in window) {
-    caches
-      .open("pagecast-audio")
-      .then((c) => c.match(new Request(activeSrc)))
-      .then((hit) => hit && off.classList.add("on"));
-  }
   void st;
 }
 
@@ -376,18 +351,9 @@ function wirePath(p) {
 }
 
 /* ---------- settings ---------- */
-async function renderSettings() {
+function renderSettings() {
   const st = store.get();
   const narrated = DATA.episodes.filter((e) => e.audio);
-  let cached = 0;
-  if ("caches" in window) {
-    try {
-      const c = await caches.open("pagecast-audio");
-      for (const e of narrated) if (await c.match(new Request(e.audio))) cached++;
-    } catch {
-      /* ignore */
-    }
-  }
   const listened = Math.round(
     Object.entries(st.progress).reduce(
       (a, [slug, p]) => a + (p.done ? bySlug[slug]?.durationSec || 0 : p.pos || 0),
@@ -397,8 +363,6 @@ async function renderSettings() {
   main.innerHTML = R.settings(st, {
     count: DATA.episodes.length,
     narrated: narrated.length,
-    cached,
-    audioMb: Math.round(narrated.reduce((a, e) => a + (e.sizeBytes || 0), 0) / 1048576),
     done: Object.values(st.progress).filter((p) => p.done).length,
     listened,
     version: DATA.version,
@@ -412,25 +376,6 @@ async function renderSettings() {
       renderSettings();
     }),
   );
-  document.getElementById("btn-download-all")?.addEventListener("click", async (e) => {
-    const btn = e.currentTarget;
-    const status = document.getElementById("download-status");
-    btn.disabled = true;
-    let n = 0;
-    try {
-      const c = await caches.open("pagecast-audio");
-      for (const ep of narrated) {
-        if (!(await c.match(new Request(ep.audio)))) await c.add(new Request(ep.audio));
-        n++;
-        status.textContent = `${n} מתוך ${narrated.length} שמורים`;
-      }
-      toast("כל הקריינות שמורה במכשיר");
-    } catch {
-      toast("ההורדה נעצרה. בדוק חיבור ונסה שוב.");
-    } finally {
-      btn.disabled = false;
-    }
-  });
   document.getElementById("btn-export")?.addEventListener("click", () => {
     const blob = new Blob([store.export()], { type: "application/json" });
     const a = document.createElement("a");
@@ -463,7 +408,7 @@ function applyTheme(t) {
   document.documentElement.dataset.theme = t;
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", t === "light" ? "#ece5d8" : "#0f0e0c");
+    ?.setAttribute("content", t === "light" ? "#efe9dc" : "#14171e");
 }
 function setTheme(t) {
   store.setSetting("theme", t);

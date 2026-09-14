@@ -1,14 +1,14 @@
 {
   "slug": "waking-up-sam-harris",
-  "hash": "fcfc66dd528c99390ad493da",
-  "durationSec": 428.501224,
-  "sizeBytes": 6857078,
+  "hash": "6b360cfbe0fec76e53bf740a",
+  "durationSec": 451.062857,
+  "sizeBytes": 7218194,
   "turns": 61,
-  "chars": 4771,
+  "chars": 4985,
   "hostVoiceId": "iP95p4xoKVk53GoZ742B",
   "hostVoiceName": "Chris",
   "guestVoiceId": "cgSgspJ2msm6clMCkdW9",
   "guestVoiceName": "Jessica - Playful, Bright, Warm",
   "model": "eleven_v3",
-  "createdAt": "2026-09-14T08:19:15.264Z"
+  "createdAt": "2026-09-14T09:39:58.567Z"
 }

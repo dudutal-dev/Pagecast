@@ -58,8 +58,16 @@ owner's Elixir cocktail atlas: a static PWA. So the repo has two halves:
   ElevenLabs Image API, engraving-on-black style prompt in `scripts/illustrations.ts`), and
   `npm run export-site` which packs everything into `site/`.
 
-Adding a book = new JSON in `content/episodes/`, then ingest --produce, illustrations, export-site,
-commit, push.
+Adding a book = new JSON in `content/episodes/`, then **fact-check**, then ingest --produce,
+illustrations, export-site, commit, push.
+
+**Fact-check before you spend money on audio.** The owner's rule, set 2026-09-14: every new episode's
+`summaryMd`, `script`/`performedScript` and any `content/dialogues/<slug>.json` must be checked
+against outside sources — publisher description, the author's own site, reputable reviews, the
+replication literature for contested science — _before_ narration or dialogue is produced. Claims
+written from model knowledge alone are not good enough: they tend to attach real-sounding examples
+to the wrong book. Correcting a script after it is narrated means paying ElevenLabs to record it
+again, so the order is author → verify → produce, never produce → verify.
 
 ## Architecture
 
