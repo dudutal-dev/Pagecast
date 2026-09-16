@@ -125,10 +125,22 @@ export function home(eps, st, stats) {
 
 export function library(eps, st, q, all = eps) {
   const counts = all.reduce((m, e) => ((m[e.domain] = (m[e.domain] || 0) + 1), m), {});
+  const seriesDomains = new Set(all.filter((e) => e.series).map((e) => e.domain));
   const chips = [
     // "All books" means the library; series books are counted under their own chip.
     ["", `כל הספרים`, all.filter((e) => !e.series).length],
-    ...DOMAINS.map(([id, l]) => [id, l, counts[id] || 0]),
+    // Series first: they are collections in their own right, and at the end of a
+    // scrolling chip row nobody finds them.
+    ...DOMAINS.filter(([id]) => seriesDomains.has(id)).map(([id, l]) => [
+      id,
+      l,
+      counts[id] || 0,
+    ]),
+    ...DOMAINS.filter(([id]) => !seriesDomains.has(id)).map(([id, l]) => [
+      id,
+      l,
+      counts[id] || 0,
+    ]),
   ]
     .filter(([, , n]) => n > 0)
     .map(
@@ -136,7 +148,12 @@ export function library(eps, st, q, all = eps) {
         `<button class="chip ${q.domain === id ? "on" : ""}" role="radio" aria-checked="${q.domain === id}" data-domain="${id}">${label}<i>${n}</i></button>`,
     )
     .join("");
-  return `<div class="toolbar">
+  // When the filter lands inside a series, name it and offer its own screen.
+  const sr = eps.length && eps.every((e) => e.series) ? eps[0].series : null;
+  const seriesBar = sr
+    ? `<div class="section-title"><h2>${esc(sr.title)}</h2><a href="#/series/${sr.id}">למסך הסדרה</a></div>`
+    : "";
+  return `${seriesBar}<div class="toolbar">
     <div class="chips" role="radiogroup" aria-label="סינון לפי תחום">${chips}</div>
     <div class="sortrow"><span>${eps.length} ספרים</span>
       <label>מיון <select id="sort"><option value="newest" ${q.sort === "newest" ? "selected" : ""}>נוסף לאחרונה</option><option value="title" ${q.sort === "title" ? "selected" : ""}>לפי כותר</option><option value="duration" ${q.sort === "duration" ? "selected" : ""}>לפי משך</option><option value="unplayed" ${q.sort === "unplayed" ? "selected" : ""}>לא הושמע קודם</option></select></label>

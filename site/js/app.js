@@ -191,6 +191,13 @@ function filtered() {
   // chip or its screen, so it does not bury the library under its own books.
   if (libQuery.domain) eps = eps.filter((e) => e.domain === libQuery.domain);
   else eps = eps.filter((e) => !e.series);
+  // Inside a series filter the shelf order is the series' own, not "newest
+  // first": the Tanakh reads from Genesis to Chronicles.
+  const allOneSeries =
+    eps.length > 0 && eps.every((e) => e.series && e.series.id === eps[0].series.id);
+  if (allOneSeries && libQuery.sort === "newest") {
+    return eps.sort((a, b) => a.series.order - b.series.order);
+  }
   switch (libQuery.sort) {
     case "title":
       eps.sort((a, b) => a.title.localeCompare(b.title, "he"));
