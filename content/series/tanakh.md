@@ -68,7 +68,11 @@ text is the point. But:
 - **Every quotation verbatim**, checked with `npm run verse` before it is written into a file.
   A misquoted verse is a factual error. Copy the "לקריינות" line into the scripts and the plain
   wording into `summaryMd`.
-- In `summaryMd`: cite every quotation as book chapter:verse (e.g. בראשית א, א).
+- In `summaryMd`: cite every quotation as book chapter:verse (e.g. בראשית א, א) — using the numbering of a
+  **printed Hebrew edition**, which is what an Israeli reader has on the shelf. The online text
+  is not always the same: in Jeremiah thirty and thirty-one it runs one verse ahead, because it
+  counts Masoretic 30:25 as 31:1. `npm run verse` warns there. If a reference looks off by one
+  against a Hebrew Tanakh, the Hebrew Tanakh is right.
 - In the scripts: **at most three short quotations**, each under about twelve words, because
   they are for the ear. Say the reference in words ("בפרק הראשון"). No nikkud, no
   cantillation marks.

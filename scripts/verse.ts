@@ -67,6 +67,9 @@ export function plain(text: string): string {
       .replace(/<[^>]+>/g, "")
       .replace(/&thinsp;|&nbsp;|&#8201;|&#160;/g, " ")
       .replace(/&amp;/g, "&")
+      // Masoretic section markers such as {ס} and {פ} are layout, not
+      // words: left in, a narrator reads them aloud as letters.
+      .replace(/[{(\[][ספש][})\]]/g, " ")
       // The maqaf must become a space BEFORE the strip: it sits inside the same
       // Unicode block as the vowels, and removing it would fuse two words.
       .replace(/־/g, " ")
@@ -111,6 +114,14 @@ async function main() {
   }
   const lines = Array.isArray(raw) ? raw : [raw];
   console.log(`\n${json.ref ?? ref}\n`);
+  // This edition counts Masoretic 30:25 as 31:1, so Jeremiah 30 and 31 run one
+  // verse ahead of a printed Hebrew Tanakh. Cite the Hebrew numbering.
+  if (/(Jeremiah|ירמיהו)[ ]*3[01](\D|$)/i.test(ref)) {
+    console.log(
+      "  " +
+        "⚠ בירמיהו ל-לא המספור כאן מקדים את המהדורה העברית בפסוק אחד. לציטוט עברי הפחת אחד.",
+    );
+  }
   for (const line of lines) {
     const clean = String(line).replace(/<[^>]+>/g, "");
     console.log(`  מנוקד : ${clean}`);
