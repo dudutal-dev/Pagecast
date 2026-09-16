@@ -65,6 +65,7 @@ function parse() {
     return { name: "book", slug: arg };
   }
   if (seg === "path" && arg) return { name: "path", id: arg };
+  if (seg === "series" && arg) return { name: "series", id: arg };
   if (["library", "paths", "favorites", "settings", "about"].includes(seg))
     return { name: seg };
   return { name: "home" };
@@ -95,6 +96,7 @@ function render() {
         count: DATA.episodes.length,
         narrated: narrated.length,
         minutes: Math.round(narrated.reduce((a, e) => a + e.durationSec, 0) / 60),
+        series: DATA.series,
       });
       break;
     }
@@ -108,10 +110,19 @@ function render() {
         st,
       );
       break;
+    case "series": {
+      const sr = (DATA.series || []).find((x) => x.id === route.id);
+      if (!sr) {
+        location.hash = "#/library";
+        return;
+      }
+      main.innerHTML = R.series(sr, bySlug, st);
+      break;
+    }
     case "book": {
       const ep = bySlug[route.slug];
       if (bookMode === "dialogue" && !ep.dialogue) bookMode = "narration";
-      main.innerHTML = R.book(ep, st, ps, bookTab, bookMode);
+      main.innerHTML = R.book(ep, st, ps, bookTab, bookMode, seriesNeighbours(ep));
       wireBook(ep);
       break;
     }
@@ -162,10 +173,24 @@ function renderAnchored(selector) {
   }
 }
 
+/** The books either side of this one in its series, in canonical order. */
+function seriesNeighbours(ep) {
+  if (!ep.series) return null;
+  const sr = (DATA.series || []).find((x) => x.id === ep.series.id);
+  if (!sr) return null;
+  const order = sr.parts.flatMap((p) => p.books);
+  const i = order.indexOf(ep.slug);
+  if (i < 0) return null;
+  return { prev: bySlug[order[i - 1]] || null, next: bySlug[order[i + 1]] || null };
+}
+
 function filtered() {
   const st = store.get();
   let eps = DATA.episodes.slice();
+  // "All books" is the library; a series is its own collection, reached by its
+  // chip or its screen, so it does not bury the library under its own books.
   if (libQuery.domain) eps = eps.filter((e) => e.domain === libQuery.domain);
+  else eps = eps.filter((e) => !e.series);
   switch (libQuery.sort) {
     case "title":
       eps.sort((a, b) => a.title.localeCompare(b.title, "he"));

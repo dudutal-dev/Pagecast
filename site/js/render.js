@@ -17,6 +17,7 @@ export const DOMAINS = [
   ["science", "מדע"],
   ["biography", "ביוגרפיה"],
   ["fiction", "ספרות יפה"],
+  ["tanakh", 'תנ"ך'],
 ];
 
 export const ICONS = {
@@ -33,6 +34,8 @@ export const ICONS = {
   back15: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>',
   fwd30: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>',
   book: '<svg viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>',
+  scroll:
+    '<svg viewBox="0 0 24 24"><path d="M6 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6"/><path d="M6 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/><path d="M6 4v16M9 8h6M9 11h6M9 14h4"/></svg>',
   chat: '<svg viewBox="0 0 24 24"><path d="M20 13a7 7 0 0 1-7 7H8l-4 3v-4a7 7 0 0 1 1-13h8a7 7 0 0 1 7 7z"/><path d="M9 11h6M9 15h3"/></svg>',
 };
 
@@ -99,10 +102,21 @@ export function home(eps, st, stats) {
       <div class="cover-actions"><a class="btn primary" href="#/library">${ICONS.book} לספרייה</a><a class="btn" href="#/paths">המסלולים שלי</a></div>
     </div>
   </section>
+  ${(stats.series || [])
+    .filter((sr) => sr.parts.some((p) => p.books.length))
+    .map(
+      (sr) => `<a class="series-banner" href="#/series/${sr.id}">
+        <span class="sb-mark">${ICONS.scroll}</span>
+        <span class="sb-text"><span class="sb-k">פרק מיוחד</span><span class="sb-t">${esc(sr.title)}</span><span class="sb-s">${esc(sr.subtitle)}</span></span>
+        <span class="sb-go">${ICONS.back}</span>
+      </a>`,
+    )
+    .join("")}
   ${cont.length ? `<div class="section-title"><h2>המשך האזנה</h2><a href="#/library">לכל הספרים</a></div><div class="grid">${cont.map((e) => card(e, st)).join("")}</div>` : ""}
   <div class="section-title"><h2>הצטרפו לאחרונה</h2><a href="#/library">לכל הספרים</a></div>
   <div class="grid">${eps
-    .slice()
+    // Series books have their own screen; here they would crowd out the library.
+    .filter((e) => !e.series)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 8)
     .map((e) => card(e, st))
@@ -112,7 +126,8 @@ export function home(eps, st, stats) {
 export function library(eps, st, q, all = eps) {
   const counts = all.reduce((m, e) => ((m[e.domain] = (m[e.domain] || 0) + 1), m), {});
   const chips = [
-    ["", `כל הספרים`, all.length],
+    // "All books" means the library; series books are counted under their own chip.
+    ["", `כל הספרים`, all.filter((e) => !e.series).length],
     ...DOMAINS.map(([id, l]) => [id, l, counts[id] || 0]),
   ]
     .filter(([, , n]) => n > 0)
@@ -130,11 +145,43 @@ export function library(eps, st, q, all = eps) {
   ${eps.length ? `<div class="grid">${eps.map((e) => card(e, st)).join("")}</div>` : `<div class="empty"><h3>לא נמצאו ספרים</h3><p>נסה תחום אחר או חיפוש אחר.</p></div>`}`;
 }
 
+/** A series screen: canonical order, grouped into its parts (Torah, Prophets, Writings). */
+export function series(sr, bySlug, st) {
+  const ready = sr.parts.reduce((a, p) => a + p.books.length, 0);
+  const narrated = sr.parts
+    .flatMap((p) => p.books)
+    .filter((s) => bySlug[s]?.audio).length;
+  return `<section class="series-head">
+    <span class="series-mark">${ICONS.scroll}</span>
+    <h1>${esc(sr.title)}</h1>
+    <div class="series-sub">${esc(sr.subtitle)}</div>
+    <p class="series-intro">${esc(sr.intro)}</p>
+    <div class="series-tag">${ready} מתוך ${sr.total} ספרים${narrated ? ` · ${narrated} בקריינות` : " · הקריינות בהכנה"}</div>
+  </section>
+  ${sr.parts
+    .filter((p) => p.books.length)
+    .map(
+      (
+        p,
+      ) => `<div class="section-title"><h2>${esc(p.title)}</h2><span class="muted small">${p.books.length} ספרים</span></div>
+      <div class="grid">${p.books
+        .map((slug) => bySlug[slug])
+        .filter(Boolean)
+        .map((e) => card(e, st))
+        .join("")}</div>`,
+    )
+    .join("")}`;
+}
+
 export function favorites(eps, st) {
   return `<div class="section-title"><h2>מועדפים</h2></div>${eps.length ? `<div class="grid">${eps.map((e) => card(e, st)).join("")}</div>` : `<div class="empty"><h3>עדיין אין מועדפים</h3><p>לחץ על הלב בעמוד הספר כדי לשמור אותו כאן.</p></div>`}`;
 }
 
-export function book(ep, st, ps, tab, mode = "narration") {
+/**
+ * @param nav optional { prev, next } neighbours inside the book's series, so a
+ *   reader can move through the Tanakh in canonical order.
+ */
+export function book(ep, st, ps, tab, mode = "narration", nav = null) {
   const fav = st.favorites.includes(ep.slug);
   const hasDialogue = !!ep.dialogue;
   const active = mode === "dialogue" && hasDialogue ? "dialogue" : "narration";
@@ -167,7 +214,7 @@ export function book(ep, st, ps, tab, mode = "narration") {
   let body = "";
   if (tab === "summary") {
     body = `<div class="prose">${markdownToHtml(ep.summaryMd)}</div>
-      ${ep.knowledgeToday ? `<div class="aside gold"><div class="k">מצב הידע היום</div><p>${esc(ep.knowledgeToday)}</p></div>` : ""}
+      ${ep.knowledgeToday ? `<div class="aside gold"><div class="k">${ep.domain === "tanakh" ? "מסורת ומחקר" : "מצב הידע היום"}</div><p>${esc(ep.knowledgeToday)}</p></div>` : ""}
       ${ep.caveat ? `<div class="aside"><div class="k">הסתייגות</div><p>${esc(ep.caveat)}</p></div>` : ""}`;
   } else if (tab === "takeaways") {
     const ticks = st.ticks[ep.slug] || [];
@@ -176,7 +223,17 @@ export function book(ep, st, ps, tab, mode = "narration") {
   } else {
     body = `<div class="notes"><textarea id="notes" placeholder="מה לקחת מהספר? מחשבות, קישור לחיים שלך…">${esc(st.notes[ep.slug] || "")}</textarea><div class="status" id="notes-status"></div></div>`;
   }
-  return `<a class="crumb" href="#/library">${ICONS.back} לספרייה</a>
+  const crumb = ep.series
+    ? `<a class="crumb" href="#/series/${ep.series.id}">${ICONS.back} ל${esc(ep.series.title)}</a>`
+    : `<a class="crumb" href="#/library">${ICONS.back} לספרייה</a>`;
+  const seriesNav =
+    ep.series && nav && (nav.prev || nav.next)
+      ? `<nav class="series-nav" aria-label="ניווט בסדרה">
+        ${nav.next ? `<a class="sn next" href="#/book/${nav.next.slug}"><span class="k">הספר הבא</span><span class="t">${esc(nav.next.title)}</span></a>` : "<span></span>"}
+        ${nav.prev ? `<a class="sn prev" href="#/book/${nav.prev.slug}"><span class="k">הספר הקודם</span><span class="t">${esc(nav.prev.title)}</span></a>` : "<span></span>"}
+      </nav>`
+      : "";
+  return `${crumb}
   <article class="book-frame">
     <span class="running-head">${esc(ep.domainLabel)}</span>
     <div class="book-hero">
@@ -198,6 +255,7 @@ export function book(ep, st, ps, tab, mode = "narration") {
     </div>
     <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? "on" : ""}" data-tab="${k}">${l}</button>`).join("")}</div>
     <div role="tabpanel" id="tabpanel">${body}</div>
+    ${seriesNav}
   </article>`;
 }
 
