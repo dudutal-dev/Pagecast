@@ -1,0 +1,150 @@
+{
+  "id": "tanakh",
+  "title": "סדרת התנ\"ך",
+  "subtitle": "עשרים וארבעה ספרים, מבראשית ועד דברי הימים",
+  "intro": "כל ספרי התנ\"ך לפי הסדר המסורתי, בעברית מונגשת. לכל ספר תקציר, הקראה ופודקאסט, עם המסורת והמחקר זה לצד זה.",
+  "parts": [
+    {
+      "id": "torah",
+      "title": "תורה",
+      "books": [
+        {
+          "id": "bereshit",
+          "slug": "tanakh-bereshit",
+          "title": "בראשית",
+          "titleEn": "Genesis"
+        },
+        { "id": "shemot", "slug": "tanakh-shemot", "title": "שמות", "titleEn": "Exodus" },
+        {
+          "id": "vayikra",
+          "slug": "tanakh-vayikra",
+          "title": "ויקרא",
+          "titleEn": "Leviticus"
+        },
+        {
+          "id": "bamidbar",
+          "slug": "tanakh-bamidbar",
+          "title": "במדבר",
+          "titleEn": "Numbers"
+        },
+        {
+          "id": "devarim",
+          "slug": "tanakh-devarim",
+          "title": "דברים",
+          "titleEn": "Deuteronomy"
+        }
+      ]
+    },
+    {
+      "id": "neviim",
+      "title": "נביאים",
+      "books": [
+        {
+          "id": "yehoshua",
+          "slug": "tanakh-yehoshua",
+          "title": "יהושע",
+          "titleEn": "Joshua"
+        },
+        {
+          "id": "shoftim",
+          "slug": "tanakh-shoftim",
+          "title": "שופטים",
+          "titleEn": "Judges"
+        },
+        {
+          "id": "shmuel",
+          "slug": "tanakh-shmuel",
+          "title": "שמואל",
+          "titleEn": "Samuel"
+        },
+        {
+          "id": "melachim",
+          "slug": "tanakh-melachim",
+          "title": "מלכים",
+          "titleEn": "Kings"
+        },
+        {
+          "id": "yeshayahu",
+          "slug": "tanakh-yeshayahu",
+          "title": "ישעיהו",
+          "titleEn": "Isaiah"
+        },
+        {
+          "id": "yirmiyahu",
+          "slug": "tanakh-yirmiyahu",
+          "title": "ירמיהו",
+          "titleEn": "Jeremiah"
+        },
+        {
+          "id": "yechezkel",
+          "slug": "tanakh-yechezkel",
+          "title": "יחזקאל",
+          "titleEn": "Ezekiel"
+        },
+        {
+          "id": "trei-asar",
+          "slug": "tanakh-trei-asar",
+          "title": "תרי עשר",
+          "titleEn": "The Twelve Minor Prophets"
+        }
+      ]
+    },
+    {
+      "id": "ketuvim",
+      "title": "כתובים",
+      "books": [
+        {
+          "id": "tehilim",
+          "slug": "tanakh-tehilim",
+          "title": "תהלים",
+          "titleEn": "Psalms"
+        },
+        {
+          "id": "mishlei",
+          "slug": "tanakh-mishlei",
+          "title": "משלי",
+          "titleEn": "Proverbs"
+        },
+        { "id": "iyov", "slug": "tanakh-iyov", "title": "איוב", "titleEn": "Job" },
+        {
+          "id": "shir-hashirim",
+          "slug": "tanakh-shir-hashirim",
+          "title": "שיר השירים",
+          "titleEn": "Song of Songs"
+        },
+        { "id": "ruth", "slug": "tanakh-ruth", "title": "רות", "titleEn": "Ruth" },
+        {
+          "id": "eicha",
+          "slug": "tanakh-eicha",
+          "title": "איכה",
+          "titleEn": "Lamentations"
+        },
+        {
+          "id": "kohelet",
+          "slug": "tanakh-kohelet",
+          "title": "קהלת",
+          "titleEn": "Ecclesiastes"
+        },
+        { "id": "esther", "slug": "tanakh-esther", "title": "אסתר", "titleEn": "Esther" },
+        {
+          "id": "daniel",
+          "slug": "tanakh-daniel",
+          "title": "דניאל",
+          "titleEn": "Daniel"
+        },
+        {
+          "id": "ezra-nechemia",
+          "slug": "tanakh-ezra-nechemia",
+          "title": "עזרא ונחמיה",
+          "titleEn": "Ezra–Nehemiah"
+        },
+        {
+          "id": "divrei-hayamim",
+          "slug": "tanakh-divrei-hayamim",
+          "title": "דברי הימים",
+          "titleEn": "Chronicles"
+        }
+      ]
+    }
+  ]
+}

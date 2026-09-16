@@ -1,5 +1,5 @@
 /**
- * The 14 life domains from book-message-expert. Ids match the palettes and motifs
+ * The life domains from book-message-expert, plus "tanakh" for the Tanakh series. Ids match the palettes and motifs
  * in `book_card_svg.py` and must never be renamed (they are stored in the DB).
  */
 export const DOMAIN_IDS = [
@@ -17,6 +17,7 @@ export const DOMAIN_IDS = [
   "science",
   "biography",
   "fiction",
+  "tanakh",
 ] as const;
 
 export type DomainId = (typeof DOMAIN_IDS)[number];
@@ -36,6 +37,7 @@ export const DOMAIN_LABELS: Record<DomainId, string> = {
   science: "מדע",
   biography: "ביוגרפיה",
   fiction: "ספרות יפה",
+  tanakh: 'תנ"ך',
 };
 
 /** Domains where a "מצב הידע היום" line is expected in generated episodes. */

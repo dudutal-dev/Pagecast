@@ -28,6 +28,35 @@ const AUDIO_ONLY: Set<string> | null =
     : null;
 const VERSION = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
 
+interface SeriesBook {
+  id: string;
+  slug: string;
+  title: string;
+  titleEn: string;
+}
+interface SeriesFile {
+  id: string;
+  title: string;
+  subtitle: string;
+  intro: string;
+  parts: { id: string; title: string; books: SeriesBook[] }[];
+}
+
+/**
+ * Series are ordered collections that live beside the library, such as the
+ * Tanakh: canonical order and parts come from content/series/<id>.json rather
+ * than from the database, so a series can grow book by book without a migration.
+ */
+function loadSeries(): SeriesFile[] {
+  const dir = path.resolve("content/series");
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".json"))
+    .sort()
+    .map((f) => JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")) as SeriesFile);
+}
+
 function ensure(p: string) {
   fs.mkdirSync(p, { recursive: true });
 }
@@ -38,6 +67,25 @@ async function main() {
   ensure(path.join(SITE, "audio"));
   ensure(path.join(SITE, "assets/illustrations"));
   ensure(path.join(SITE, "assets/icons"));
+
+  const allSeries = loadSeries();
+  // slug -> where it sits in its series, for the book page's breadcrumb and prev/next.
+  const seriesOf = new Map<
+    string,
+    { id: string; title: string; part: string; partTitle: string; order: number }
+  >();
+  for (const sr of allSeries) {
+    let order = 0;
+    for (const part of sr.parts)
+      for (const b of part.books)
+        seriesOf.set(b.slug, {
+          id: sr.id,
+          title: sr.title,
+          part: part.id,
+          partTitle: part.title,
+          order: order++,
+        });
+  }
 
   const rows = db
     .select()
@@ -131,6 +179,7 @@ async function main() {
       dialogue,
       durationSec,
       sizeBytes,
+      series: seriesOf.get(slug) ?? null,
       createdAt: ep.createdAt,
     });
   }
@@ -152,6 +201,22 @@ async function main() {
       version: VERSION,
       generatedAt: new Date().toISOString(),
       episodes: out,
+      // Only the books that exist, in canonical order, so a partly written
+      // series still renders cleanly.
+      series: allSeries.map((sr) => ({
+        id: sr.id,
+        title: sr.title,
+        subtitle: sr.subtitle,
+        intro: sr.intro,
+        total: sr.parts.reduce((a, p) => a + p.books.length, 0),
+        parts: sr.parts.map((p) => ({
+          id: p.id,
+          title: p.title,
+          books: p.books
+            .map((b) => b.slug)
+            .filter((slug) => rows.some((r) => r.slug === slug)),
+        })),
+      })),
     }),
     "utf8",
   );

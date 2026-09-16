@@ -30,7 +30,8 @@
     "illustrations": "tsx scripts/illustrations.ts",
     "export-site": "tsx scripts/export-site.ts",
     "verify-audio": "tsx scripts/verify-audio.ts",
-    "dialogue": "tsx scripts/produce-dialogue.ts"
+    "dialogue": "tsx scripts/produce-dialogue.ts",
+    "verse": "tsx scripts/verse.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",

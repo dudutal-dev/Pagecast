@@ -93,6 +93,54 @@ const MOTIFS: Record<string, string> = {
     "an empty round meditation cushion on bare wooden boards, a single open window casting one rectangle of light across the floor",
   "beyond-good-and-evil":
     "an antique brass balance scale with both pans empty, a thin cracked mask resting on the ground beside it, a long shadow behind",
+  "tanakh-bereshit":
+    "a single great tree in a walled garden at first light, a river flowing out from beneath it and dividing into four streams, a scatter of new stars in the sky",
+  "tanakh-shemot":
+    "a thorn bush in a rocky desert at night, wrapped in tall flames that do not consume a single leaf, a pair of sandals left on the ground before it",
+  "tanakh-vayikra":
+    "a small altar of uncut stones with one thin column of smoke rising straight up, two turtledoves resting on the ground beside it",
+  "tanakh-bamidbar":
+    "a desert encampment of small tents arranged in a square around one central tent, a tall column of cloud standing above it",
+  "tanakh-devarim":
+    "an unrolled scroll with blank ruled lines and a shepherd's staff resting on a mountaintop, a green valley and a winding river far below",
+  "tanakh-yehoshua":
+    "a curved ram's horn resting on stones before tall ancient city walls, a long crack running down through the wall",
+  "tanakh-shoftim":
+    "a lone date palm on a hillside with a simple wooden seat beneath it, a sword planted upright in the ground nearby",
+  "tanakh-shmuel":
+    "a small leather sling and five smooth river stones lying beside an ancient lyre on a rock",
+  "tanakh-melachim":
+    "two tall bronze pillars at the porch of a temple, a raven flying above them carrying a piece of bread in its beak",
+  "tanakh-yeshayahu":
+    "a sword laid across an anvil, its blade bending into the curved blade of a plough, a hammer resting beside it",
+  "tanakh-yirmiyahu":
+    "a broken clay jar lying in pieces on the ground, an almond branch in full blossom arching above it",
+  "tanakh-yechezkel":
+    "a wide valley of scattered dry stones with small green shoots rising between them, a strong wind sweeping in from the horizon",
+  "tanakh-trei-asar":
+    "a great fish beneath rolling sea waves, a small wooden boat on the surface above, a leafy gourd vine growing on the distant shore",
+  "tanakh-tehilim":
+    "an ancient lyre hung on the branch of a willow tree beside a slow river",
+  "tanakh-mishlei":
+    "a small stone house built on seven carved pillars, its door open, a single oil lamp glowing in the window",
+  "tanakh-iyov":
+    "a whirlwind descending from a vast starry sky over a barren plain, a single broken potsherd lying on the ground",
+  "tanakh-shir-hashirim":
+    "a lily growing among thorns, a split pomegranate beside it, a small gazelle standing on a distant hill",
+  "tanakh-ruth":
+    "sheaves of barley standing in a harvested field at dusk, a few uncut stalks left standing at the corner of the field",
+  "tanakh-eicha":
+    "an empty city gate on a hill at dusk, a single small oil lamp flickering in the archway, fallen stones below",
+  "tanakh-kohelet":
+    "an hourglass beside a low sun on the horizon, a river flowing out toward the sea, a single leaf drifting on the water",
+  "tanakh-esther":
+    "a signet ring resting on a rolled scroll sealed with wax, a slender golden sceptre lying beside it",
+  "tanakh-daniel":
+    "a lion lying calmly at the mouth of a stone den, an open window above with a single oil lamp facing the east",
+  "tanakh-ezra-nechemia":
+    "a stone city wall half rebuilt, a mason's trowel and a sword resting together on the top course of stones",
+  "tanakh-divrei-hayamim":
+    "a long scroll with blank ruled lines unrolling across the frame, ending at a flight of stone steps rising toward an open gate",
   "genealogy-of-morality":
     "a lantern held low over a deep archaeological trench, layers of earth visible in the wall, a small broken clay tablet part-uncovered at the bottom",
 };
@@ -105,6 +153,32 @@ const force = args.includes("--force");
 const wantEmblem = args.includes("--emblem");
 const onlyIdx = args.indexOf("--only");
 const only = onlyIdx >= 0 ? args[onlyIdx + 1] : undefined;
+const reserveIdx = args.indexOf("--reserve");
+/** Characters held back so an image run never empties the month's quota. */
+const RESERVE = reserveIdx >= 0 ? Number(args[reserveIdx + 1] ?? 8000) : 8000;
+/**
+ * Each image draws on the same monthly character quota as narration, about
+ * 1,200 characters per image (measured 2026-09-14: six images took ~7,300).
+ * This was once assumed to be free, and spent without warning.
+ */
+const CHARS_PER_IMAGE = 1250;
+
+async function remainingCharacters(): Promise<number | null> {
+  try {
+    const res = await fetch("https://api.elevenlabs.io/v1/user/subscription", {
+      headers: { "xi-api-key": KEY! },
+    });
+    const j = (await res.json()) as {
+      character_count?: number;
+      character_limit?: number;
+    };
+    if (typeof j.character_count !== "number" || typeof j.character_limit !== "number")
+      return null;
+    return Math.max(0, j.character_limit - j.character_count);
+  } catch {
+    return null;
+  }
+}
 
 async function create(prompt: string): Promise<string> {
   const res = await fetch(BASE, {
@@ -165,7 +239,30 @@ async function main() {
     process.exit(2);
   }
   fs.mkdirSync(OUT, { recursive: true });
-  const slugs = Object.keys(MOTIFS).filter((s) => !only || s === only);
+  const all = Object.keys(MOTIFS).filter((s) => !only || s === only);
+  // Only the images that will actually be generated count against the quota.
+  const todo = all.filter((s) => force || !fs.existsSync(path.join(OUT, `${s}.jpg`)));
+  const cost = (todo.length + (wantEmblem ? 1 : 0)) * CHARS_PER_IMAGE;
+  const left = await remainingCharacters();
+  if (cost > 0) {
+    console.log(
+      `${todo.length} איורים לייצור, כ-${cost.toLocaleString()} תווים` +
+        (left == null
+          ? ""
+          : ` · במכסה ${left.toLocaleString()}, שמורים ${RESERVE.toLocaleString()}`),
+    );
+  }
+  if (left != null && cost > 0 && left - cost < RESERVE) {
+    console.error(
+      `אין מספיק מכסה: נדרשים כ-${cost.toLocaleString()} תווים ונותרו ${left.toLocaleString()}. ` +
+        `הקטן עם --only <slug>, או חכה לחידוש המכסה.`,
+    );
+    // exitCode rather than exit(): exiting while the quota request's socket is
+    // still closing trips a libuv assertion on Windows.
+    process.exitCode = 5;
+    return;
+  }
+  const slugs = all;
   let failed = 0;
   // Three at a time: gentle on rate limits, still quick.
   for (let i = 0; i < slugs.length; i += 3) {

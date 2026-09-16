@@ -23,6 +23,7 @@ PALETTES = {  # bg, accent, text, secondary
     "spirituality":  ("#1F1B4D", "#C9BEEB", "#F5F0E8", "#7A6FBF"),
     "philosophy":    ("#4B4238", "#D97B4A", "#F5F0E8", "#B8A48A"),
     "history":       ("#3B2A1E", "#D9B98C", "#F5F0E8", "#8C6B4F"),
+    "tanakh":        ("#3A1420", "#D8B46A", "#F5F0E8", "#A8747E"),
     "science":       ("#061A33", "#3CD6E8", "#F5F0E8", "#4C7BB0"),
     "biography":     ("#111111", "#E63946", "#F5F0E8", "#9A9A9A"),
     "fiction":       ("#1D3B2A", "#C9A961", "#F5F0E8", "#6B9C7E"),
@@ -30,7 +31,7 @@ PALETTES = {  # bg, accent, text, secondary
 DEFAULT_MOTIF = {
     "personal": "stairs", "psychology": "lamp", "business": "compass", "money": "seed",
     "productivity": "hourglass", "relationships": "chairs", "parenting": "hands",
-    "health": "breath", "spirituality": "ripple", "philosophy": "door", "history": "wheel",
+    "health": "breath", "spirituality": "ripple", "philosophy": "door", "history": "wheel", "tanakh": "lamp",
     "science": "telescope", "biography": "silhouette", "fiction": "bird",
 }
 

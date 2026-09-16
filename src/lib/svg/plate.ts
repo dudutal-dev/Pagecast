@@ -28,6 +28,7 @@ const WASH: Record<DomainId, [string, string]> = {
   science: ["#6f9fb0", "#c9d9e0"],
   biography: ["#b07070", "#d9c9b0"],
   fiction: ["#7f9a6e", "#c9a24a"],
+  tanakh: ["#b08a5a", "#d9c29a"],
 };
 
 function hash(s: string): number {
@@ -240,6 +241,27 @@ const MOTIFS: Record<DomainId, (seed: number, w: [string, string]) => string> = 
     }).join("")}
     ${ground(760)}
     ${dust(seed, 10)}`,
+
+  // An open scroll on its two rollers, lines of text as hatching (Tanakh series)
+  tanakh: (seed, w) => `
+    ${wash(512, 500, 300, 150, w[0])}
+    <path d="M300 300 H724 V700 H300 Z" fill="url(#h2)" ${S1} stroke-opacity="0.6"/>
+    <path d="M300 300 C320 290 340 310 360 300 M664 300 C684 290 704 310 724 300" ${S1}/>
+    ${Array.from({ length: 11 }, (_, i) => {
+      const y = 340 + i * 32;
+      const inset = 30 + Math.round(rnd(seed, i) * 60);
+      return `<path d="M${330} ${y} H${724 - inset}" ${S1} stroke-opacity="0.55"/>`;
+    }).join("")}
+    <path d="M300 250 V750" ${S}/>
+    <path d="M724 250 V750" ${S}/>
+    <rect x="276" y="286" width="48" height="428" rx="24" fill="${BG}" ${S}/>
+    <rect x="700" y="286" width="48" height="428" rx="24" fill="${BG}" ${S}/>
+    <circle cx="300" cy="238" r="14" ${S2}/>
+    <circle cx="724" cy="238" r="14" ${S2}/>
+    <circle cx="300" cy="762" r="14" ${S2}/>
+    <circle cx="724" cy="762" r="14" ${S2}/>
+    ${ground(810)}
+    ${dust(seed, 12)}`,
 
   // Eye with a lighthouse beam in the iris (science of mind)
   science: (seed, w) => `

@@ -22,6 +22,7 @@ export const PALETTES: Record<DomainId, Palette> = {
   science: ["#061A33", "#3CD6E8", "#F5F0E8", "#4C7BB0"],
   biography: ["#111111", "#E63946", "#F5F0E8", "#9A9A9A"],
   fiction: ["#1D3B2A", "#C9A961", "#F5F0E8", "#6B9C7E"],
+  tanakh: ["#3A1420", "#D8B46A", "#F5F0E8", "#A8747E"],
 };
 
 export const MOTIF_NAMES = [
@@ -57,6 +58,7 @@ export const DEFAULT_MOTIF: Record<DomainId, MotifName> = {
   science: "telescope",
   biography: "silhouette",
   fiction: "bird",
+  tanakh: "lamp",
 };
 
 function escapeXml(s: string): string {
